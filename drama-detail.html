@@ -603,9 +603,12 @@ function renderMultiLangSection() {
   const pct = total > 0 ? Math.round(completeLangs / total * 100) : 0;
   html += `<div class="flex flex-wrap items-center gap-3 mb-5 p-3" style="background:var(--gray-light);border:2px solid var(--border);border-radius:var(--radius-sm)">`;
   html += `<div class="flex items-center gap-2 mr-2"><div class="w-28 h-3 overflow-hidden" style="border:2px solid var(--border);border-radius:var(--radius-full);background:var(--white)"><div class="h-full" style="width:${pct}%;background:var(--mint)"></div></div><span class="text-xs font-bold">${completeLangs}/${total} 语种完整</span></div>`;
-  html += `<span class="stat-chip" style="background:${coverDone===total?'var(--mint-light)':'var(--coral-light)'}">封面 ${coverDone}/${total}</span>`;
-  html += `<span class="stat-chip" style="background:${bannerDone===total?'var(--mint-light)':'var(--coral-light)'}">Banner ${bannerDone}/${total}</span>`;
-  html += `<span class="stat-chip" style="background:${synopsisDone===total?'var(--mint-light)':'var(--coral-light)'}">简介 ${synopsisDone}/${total}</span>`;
+  var covBg = coverDone===total ? 'var(--mint-light)' : 'var(--coral-light)';
+  var banBg = bannerDone===total ? 'var(--mint-light)' : 'var(--coral-light)';
+  var synBg = synopsisDone===total ? 'var(--mint-light)' : 'var(--coral-light)';
+  html += '<span class="stat-chip" style="background:' + covBg + '">封面 ' + coverDone + '/' + total + '</span>';
+  html += '<span class="stat-chip" style="background:' + banBg + '">Banner ' + bannerDone + '/' + total + '</span>';
+  html += '<span class="stat-chip" style="background:' + synBg + '">简介 ' + synopsisDone + '/' + total + '</span>';
   html += `<span class="stat-chip" style="background:var(--bg)">字幕详见剧集管理</span>`;
   html += `</div>`;
 
@@ -616,7 +619,10 @@ function renderMultiLangSection() {
   html += `<div class="lang-accordion mb-4" style="border:2px solid var(--border);border-radius:var(--radius-sm);overflow:hidden">`;
   html += `<div class="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-yellow-50 transition-colors" style="background:var(--lemon);border-bottom:2px solid var(--border)" onclick="toggleLangAccordion(event)">`;
   html += `<div class="flex items-center gap-2"><iconify-icon icon="lucide:chevron-right" class="text-sm lang-chevron transition-transform" style="transform:rotate(90deg)"></iconify-icon><span class="text-sm font-bold">EN</span><span class="text-xs" style="color:var(--gray)">English</span><span class="text-xs font-bold px-2 py-0.5" style="background:var(--coral);color:#fff;border-radius:var(--radius-full)">必填</span></div>`;
-  html += `<div class="flex items-center gap-3 text-xs"><span style="color:${enData.cover?'var(--mint)':'var(--coral)'}">封面 ${enData.cover?'✓':'✗'}</span><span style="color:${enData.banner?'var(--mint)':'var(--coral)'}">Banner ${enData.banner?'✓':'✗'}</span><span style="color:${enData.synopsis?'var(--mint)':'var(--coral)'}">简介 ${enData.synopsis?'✓':'✗'}</span><span style="color:var(--mint)">字幕 ${enSub.done}/${enSub.total}</span></div>`;
+  var enCovC = enData.cover ? 'var(--mint)' : 'var(--coral)';
+  var enBanC = enData.banner ? 'var(--mint)' : 'var(--coral)';
+  var enSynC = enData.synopsis ? 'var(--mint)' : 'var(--coral)';
+  html += '<div class="flex items-center gap-3 text-xs">' + '<span style="color:' + enCovC + '">封面 ' + (enData.cover ? '✓' : '✗') + '</span>' + '<span style="color:' + enBanC + '">Banner ' + (enData.banner ? '✓' : '✗') + '</span>' + '<span style="color:' + enSynC + '">简介 ' + (enData.synopsis ? '✓' : '✗') + '</span>' + '<span style="color:var(--mint)">字幕 ' + enSub.done + '/' + enSub.total + '</span></div>';
   html += `</div><div class="lang-content p-4" style="border-top:2px solid var(--border)"><div class="grid grid-cols-1 md:grid-cols-3 gap-4">`;
   html += buildCoverCell('EN', enData, 'h-32');
   html += buildBannerCell('EN', enData, 'h-32');
@@ -638,11 +644,14 @@ function renderMultiLangSection() {
       const bgColor = allDone ? 'var(--mint-light)' : 'var(--white)';
       html += `<div class="lang-card cursor-pointer" data-lang="${code}" onclick="openLangDetail('${code}')" style="border:2px solid ${borderColor};border-radius:var(--radius-sm);padding:10px 12px;background:${bgColor};transition:all 0.15s">`;
       html += `<div class="flex items-center justify-between mb-1.5"><span class="font-bold text-sm heading" style="color:${langFg(code)}">${code}</span><span class="text-xs" style="color:var(--gray)">${langName(code)}</span></div>`;
-      html += `<div class="flex items-center gap-2 text-xs">`;
-      html += `<span style="color:${d.cover?'var(--mint)':'var(--coral)}">封${d.cover?'✓':'✗'}</span>`;
-      html += `<span style="color:${d.banner?'var(--mint)':'var(--coral)}">Ban${d.banner?'✓':'✗'}</span>`;
-      html += `<span style="color:${d.synopsis?'var(--mint)':'var(--coral)}">简${d.synopsis?'✓':'✗'}</span>`;
-      html += `<span style="color:var(--gray)">字${sub.done}/${sub.total}</span>`;
+      var cCov = d.cover ? 'var(--mint)' : 'var(--coral)';
+      var cBan = d.banner ? 'var(--mint)' : 'var(--coral)';
+      var cSyn = d.synopsis ? 'var(--mint)' : 'var(--coral)';
+      html += '<div class="flex items-center gap-2 text-xs">';
+      html += '<span style="color:' + cCov + '">封' + (d.cover ? '✓' : '✗') + '</span>';
+      html += '<span style="color:' + cBan + '">Ban' + (d.banner ? '✓' : '✗') + '</span>';
+      html += '<span style="color:' + cSyn + '">简' + (d.synopsis ? '✓' : '✗') + '</span>';
+      html += '<span style="color:var(--gray)">字' + sub.done + '/' + sub.total + '</span>';
       html += `</div></div>`;
     });
     html += `</div>`;
