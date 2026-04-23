@@ -51,7 +51,7 @@
     .lang-chip { border: 2px solid var(--border); border-radius: var(--radius-full); font-weight: 600; font-size: 13px; padding: 3px 10px; display: inline-flex; align-items: center; gap: 4px; cursor: default; }
     .lang-chip .chip-rm { cursor: pointer; font-size: 14px; line-height: 1; }
     .lang-chip .chip-rm:hover { color: var(--coral); }
-    .matrix { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .matrix { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; }
     .matrix th { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 12px; text-align: left; border-bottom: 2px solid var(--border); background: var(--gray-light); white-space: nowrap; }
     .matrix td { padding: 10px 12px; border-bottom: 2px solid var(--border); vertical-align: middle; font-size: 13px; }
     .matrix tr:last-child td { border-bottom: none; }
@@ -400,7 +400,7 @@
 
       <!-- Episode Matrix Table -->
       <div class="overflow-x-auto" style="border:2px solid var(--border);border-radius:var(--radius-sm)">
-        <table class="matrix" style="width:100%">
+        <table class="matrix">
           <thead id="matrix-head"></thead>
           <tbody id="ep-tbody"></tbody>
         </table>
@@ -762,7 +762,7 @@ function renderStats() {
 function renderMatrix() {
   // Dynamic header
   const thead = document.getElementById('matrix-head');
-  thead.innerHTML = `<tr><th class="sticky-left" style="width:70px;text-align:center;left:0">#</th><th class="sticky-left" style="min-width:200px;left:70px">视频文件</th>${activeLangs.map(c=>`<th style="width:80px;text-align:center" title="${langName(c)}"><span class="inline-block w-2 h-2 rounded-full mr-1" style="background:${langDot(c)}"></span>${c}</th>`).join('')}<th class="sticky-right" style="width:60px;text-align:center">操作</th></tr>`;
+  thead.innerHTML = `<tr><th class="sticky-left" style="width:70px;text-align:center;left:0">#</th><th class="sticky-left" style="min-width:280px;left:70px">视频文件</th>${activeLangs.map(c=>`<th style="width:80px;text-align:center" title="${langName(c)}"><span class="inline-block w-2 h-2 rounded-full mr-1" style="background:${langDot(c)}"></span>${c}</th>`).join('')}<th class="sticky-right" style="width:60px;text-align:center">操作</th></tr>`;
 
   const tbody = document.getElementById('ep-tbody');
   tbody.innerHTML = '';
@@ -796,7 +796,7 @@ function renderMatrix() {
     // Video
     const tdV = document.createElement('td');
     tdV.className = 'sticky-left';
-    tdV.style.left = '70px';
+    tdV.style.cssText = 'left:70px;min-width:280px';
     tdV.innerHTML = buildVideoCell(ep);
     tr.appendChild(tdV);
 
@@ -830,8 +830,8 @@ function renderMatrix() {
 
 function buildVideoCell(ep) {
   const v = ep.video;
-  if (v.status === 'uploaded') return `<div class="flex items-center gap-2"><img src="https://picsum.photos/seed/ep${ep.ep}/160/90" class="w-14 h-8 object-cover shrink-0 cursor-pointer" style="border:2px solid var(--border);border-radius:4px" onclick="openSubPreview(${ep.ep},'video')" title="预览视频"><div><div class="font-semibold text-sm truncate">${v.file}</div><div class="text-xs" style="color:var(--gray)">${v.dur} · ${v.size}</div></div><span class="badge" style="background:var(--mint-light)">已上传</span></div>`;
-  if (v.status === 'uploading') return `<div class="flex items-center gap-2"><div class="w-14 h-8 flex items-center justify-center shrink-0" style="border:2px solid var(--border);border-radius:4px;background:var(--gray-light)"><iconify-icon icon="lucide:video" style="color:#ccc" class="text-sm"></iconify-icon></div><div class="flex-1"><div class="font-semibold text-sm truncate">${v.file}</div><div class="text-xs mb-1" style="color:var(--gray)">${v.size}</div><div class="w-full h-2 overflow-hidden" style="border:1.5px solid var(--border);border-radius:var(--radius-full);background:var(--white)"><div class="h-full" style="width:${v.progress}%;background:var(--purple)"></div></div></div><span class="badge" style="background:var(--purple-light)">上传中 ${v.progress}%</span></div>`;
+  if (v.status === 'uploaded') return `<div class="flex items-center gap-2"><img src="https://picsum.photos/seed/ep${ep.ep}/160/90" class="w-14 h-8 object-cover shrink-0 cursor-pointer" style="border:2px solid var(--border);border-radius:4px" onclick="openSubPreview(${ep.ep},'video')" title="预览视频"><div class="min-w-0"><div class="font-semibold text-sm truncate">${v.file}</div><div class="text-xs" style="color:var(--gray)">${v.dur} · ${v.size}</div></div><span class="badge shrink-0 whitespace-nowrap" style="background:var(--mint-light)">已上传</span></div>`;
+  if (v.status === 'uploading') return `<div class="flex items-center gap-2"><div class="w-14 h-8 flex items-center justify-center shrink-0" style="border:2px solid var(--border);border-radius:4px;background:var(--gray-light)"><iconify-icon icon="lucide:video" style="color:#ccc" class="text-sm"></iconify-icon></div><div class="flex-1 min-w-0"><div class="font-semibold text-sm truncate">${v.file}</div><div class="text-xs mb-1" style="color:var(--gray)">${v.size}</div><div class="w-full h-2 overflow-hidden" style="border:1.5px solid var(--border);border-radius:var(--radius-full);background:var(--white)"><div class="h-full" style="width:${v.progress}%;background:var(--purple)"></div></div></div><span class="badge shrink-0 whitespace-nowrap" style="background:var(--purple-light)">上传中 ${v.progress}%</span></div>`;
   if (v.status === 'failed') return `<div class="flex items-center gap-2"><div class="w-14 h-8 flex items-center justify-center shrink-0" style="border:2px solid var(--border);border-radius:4px;background:var(--gray-light)"><iconify-icon icon="lucide:video" style="color:#ccc" class="text-sm"></iconify-icon></div><div class="flex-1"><div class="flex items-center gap-2"><span class="font-semibold text-sm">${v.file}</span><span class="badge" style="background:var(--coral);color:#fff">上传失败</span></div><div class="text-xs mt-1 flex items-center gap-1"><iconify-icon icon="lucide:alert-circle" style="color:var(--coral)"></iconify-icon>${v.error}</div></div></div>`;
   if (v.status === 'format_error') return `<div class="flex items-center gap-2"><div class="w-14 h-8 flex items-center justify-center shrink-0" style="border:2px solid var(--border);border-radius:4px;background:var(--gray-light)"><iconify-icon icon="lucide:video" style="color:#ccc" class="text-sm"></iconify-icon></div><div class="flex-1"><div class="flex items-center gap-2"><span class="font-semibold text-sm">${v.file}</span><span class="badge" style="background:var(--lemon)">格式错误</span></div><div class="text-xs mt-1 flex items-center gap-1"><iconify-icon icon="lucide:alert-triangle" style="color:#d97706"></iconify-icon>${v.error}</div></div></div>`;
   return `<div class="flex items-center gap-2"><div class="w-14 h-8 flex items-center justify-center shrink-0" style="border:2px dashed var(--border);border-radius:4px;background:var(--white)"><iconify-icon icon="lucide:upload" style="color:var(--gray)" class="text-sm"></iconify-icon></div><span class="text-sm" style="color:var(--gray)">待上传视频</span></div>`;
