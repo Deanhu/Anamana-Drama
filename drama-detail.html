@@ -63,6 +63,20 @@
     .sub-cell .cell-filename { font-size: 10px; color: var(--gray); max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; margin: 2px auto 0; }
     .sub-cell .cell-actions { display: none; position: absolute; inset: 0; background: rgba(26,26,26,0.85); color: #fff; align-items: center; justify-content: center; gap: 10px; font-size: 11px; font-weight: 600; }
     .sub-cell.uploaded:hover .cell-actions { display: flex; }
+    /* Sticky columns for matrix */
+    .matrix th.sticky-left, .matrix td.sticky-left { position: sticky; z-index: 2; background: inherit; }
+    .matrix th.sticky-left { background: var(--gray-light); }
+    .matrix td.sticky-left { background: var(--white); }
+    .matrix tr:hover td.sticky-left { background: var(--lemon-light); }
+    .matrix th.sticky-right, .matrix td.sticky-right { position: sticky; right: 0; z-index: 2; background: inherit; }
+    .matrix th.sticky-right { background: var(--gray-light); }
+    .matrix td.sticky-right { background: var(--white); }
+    .matrix tr:hover td.sticky-right { background: var(--lemon-light); }
+    .sticky-left::after, .sticky-right::before { content: ''; position: absolute; top: 0; bottom: 0; width: 4px; pointer-events: none; }
+    .sticky-left:last-of-type::after { right: -4px; background: linear-gradient(to right, rgba(0,0,0,0.06), transparent); }
+    .sticky-right:first-of-type::before { left: -4px; background: linear-gradient(to left, rgba(0,0,0,0.06), transparent); }
+    /* Lang card grid */
+    .lang-card:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
     /* Language search panel */
     .lang-search-panel { position: absolute; top: calc(100% + 6px); left: 0; z-index: 30; width: 260px; background: var(--white); border: 2px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow); padding: 8px; }
     .lang-search-panel input { width: 100%; padding: 6px 10px; border: 2px solid var(--border); border-radius: 6px; font-size: 13px; outline: none; margin-bottom: 6px; }
@@ -328,23 +342,27 @@
         </div>
       </div>
 
-      <!-- Language Selector -->
-      <div class="flex flex-wrap items-center gap-2 mb-4 p-3" style="background:var(--gray-light);border:2px solid var(--border);border-radius:var(--radius-sm)">
-        <span class="text-sm font-bold">支持字幕语言:</span>
-        <div id="lang-chips" class="flex flex-wrap items-center gap-2"></div>
-        <div class="relative">
-          <button class="btn btn-secondary px-3 py-1 text-xs" onclick="toggleLangSearch()" style="border-radius:var(--radius-full)"><iconify-icon icon="lucide:plus" class="text-xs"></iconify-icon> 添加</button>
-          <div id="lang-search-panel" class="lang-search-panel" style="display:none">
-            <div id="lang-search-count" class="text-xs font-bold mb-1.5 px-1" style="color:var(--gray)">已选 3/15 种语言</div>
-            <input type="text" id="lang-search-input" placeholder="搜索语言..." oninput="filterLangSearch()">
-            <button id="lang-toggle-all" class="w-full text-left px-2 py-1.5 text-xs font-bold cursor-pointer" style="border:2px solid var(--border);border-radius:6px;background:var(--mint-light);color:var(--black);margin-bottom:4px" onclick="toggleAllLangs()">全选 / 取消全选</button>
-            <div class="lang-search-list" id="lang-search-list"></div>
+      <!-- Language Selector + Stats (merged) -->
+      <div class="mb-4 p-3" style="background:var(--gray-light);border:2px solid var(--border);border-radius:var(--radius-sm)">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-bold">字幕语言</span>
+          <div class="flex items-center gap-2">
+            <span id="sub-total-stat" class="text-xs font-bold" style="color:var(--gray)"></span>
+            <div class="relative">
+              <button class="btn btn-secondary px-3 py-1 text-xs" onclick="toggleLangSearch()" style="border-radius:var(--radius-full)"><iconify-icon icon="lucide:plus" class="text-xs"></iconify-icon> 添加</button>
+              <div id="lang-search-panel" class="lang-search-panel" style="display:none">
+                <div id="lang-search-count" class="text-xs font-bold mb-1.5 px-1" style="color:var(--gray)">已选 3/15 种语言</div>
+                <input type="text" id="lang-search-input" placeholder="搜索语言..." oninput="filterLangSearch()">
+                <button id="lang-toggle-all" class="w-full text-left px-2 py-1.5 text-xs font-bold cursor-pointer" style="border:2px solid var(--border);border-radius:6px;background:var(--mint-light);color:var(--black);margin-bottom:4px" onclick="toggleAllLangs()">全选 / 取消全选</button>
+                <div class="lang-search-list" id="lang-search-list"></div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-
-      <!-- Subtitle Stats -->
-      <div class="flex flex-wrap items-center gap-3 mb-5" id="stat-bar">
+        <div id="lang-chips-stats" class="relative">
+          <div id="lang-chips-inner" class="flex flex-wrap items-center gap-2" style="max-height:36px;overflow:hidden;transition:max-height 0.3s ease"></div>
+          <button id="lang-chips-toggle" class="text-xs font-bold cursor-pointer mt-1" style="color:var(--purple);display:none" onclick="toggleChipsExpand()"></button>
+        </div>
       </div>
 
       <!-- Batch Upload Panel (collapsible) -->
@@ -605,24 +623,30 @@ function renderMultiLangSection() {
   html += buildSynopsisCell('EN', enData, 5);
   html += `</div><div class="mt-3 pt-3" style="border-top:2px solid var(--border)"><div class="flex items-center gap-2"><span class="text-xs font-semibold">字幕</span><span class="text-xs px-2 py-0.5" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-full)">${enSub.done} / ${enSub.total} 集已上传</span><span class="text-xs ml-auto cursor-pointer font-semibold" style="color:var(--purple)" onclick="goToEpisodeTab()">在「剧集管理」中管理 →</span></div></div></div></div>`;
 
-  // Other languages
+  // Other languages — compact card grid
   const others = activeLangs.filter(c => c !== 'EN');
   if (others.length > 0) {
-    html += `<div class="text-xs font-semibold mb-2 mt-6" style="color:var(--gray)">其他语言 (${others.length})</div>`;
+    html += `<div class="flex items-center justify-between mt-6 mb-2"><div class="text-xs font-semibold" style="color:var(--gray)">其他语言 (${others.length})</div><button class="text-xs font-bold cursor-pointer" style="color:var(--purple);background:none;border:none" onclick="translateAllSynopsis()"><iconify-icon icon="lucide:languages" class="text-xs"></iconify-icon> 一键翻译全部简介</button></div>`;
+    html += `<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2" id="lang-card-grid">`;
     others.forEach(code => {
       const d = multiLangData[code] || {};
       const sub = getSubCount(code);
-      html += `<div class="lang-accordion mb-2" style="border:2px solid var(--border);border-radius:var(--radius-sm);overflow:hidden">`;
-      html += `<div class="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-gray-50 transition-colors" onclick="toggleLangAccordion(event)">`;
-      html += `<div class="flex items-center gap-2"><iconify-icon icon="lucide:chevron-right" class="text-sm lang-chevron transition-transform"></iconify-icon><span class="text-sm font-bold">${code}</span><span class="text-xs" style="color:var(--gray)">${langName(code)}</span></div>`;
-      html += `<div class="flex items-center gap-3 text-xs"><span style="color:${d.cover?'var(--mint)':'var(--coral)'}">封面 ${d.cover?'✓':'✗'}</span><span style="color:${d.banner?'var(--mint)':'var(--coral)'}">Banner ${d.banner?'✓':'✗'}</span><span style="color:${d.synopsis?'var(--mint)':'var(--coral)'}">简介 ${d.synopsis?'✓':'✗'}</span><span style="color:var(--gray)">字幕 ${sub.done}/${sub.total}</span></div>`;
-      html += `</div>`;
-      html += `<div class="lang-content hidden p-4" style="border-top:2px solid var(--border)"><div class="grid grid-cols-1 md:grid-cols-3 gap-4">`;
-      html += buildCoverCell(code, d, 'h-28');
-      html += buildBannerCell(code, d, 'h-28');
-      html += buildSynopsisCell(code, d, 4);
-      html += `</div><div class="mt-3 pt-3" style="border-top:2px solid var(--border)"><div class="flex items-center gap-2"><span class="text-xs font-semibold">字幕</span><span class="text-xs px-2 py-0.5" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-full)">${sub.done} / ${sub.total} 集已上传</span><span class="text-xs ml-auto cursor-pointer font-semibold" style="color:var(--purple)" onclick="goToEpisodeTab()">管理字幕 →</span></div></div></div></div>`;
+      const items = [d.cover, d.banner, d.synopsis];
+      const done = items.filter(Boolean).length;
+      const allDone = done === 3;
+      const borderColor = allDone ? 'var(--mint)' : 'var(--border)';
+      const bgColor = allDone ? 'var(--mint-light)' : 'var(--white)';
+      html += `<div class="lang-card cursor-pointer" data-lang="${code}" onclick="openLangDetail('${code}')" style="border:2px solid ${borderColor};border-radius:var(--radius-sm);padding:10px 12px;background:${bgColor};transition:all 0.15s">`;
+      html += `<div class="flex items-center justify-between mb-1.5"><span class="font-bold text-sm heading" style="color:${langFg(code)}">${code}</span><span class="text-xs" style="color:var(--gray)">${langName(code)}</span></div>`;
+      html += `<div class="flex items-center gap-2 text-xs">`;
+      html += `<span style="color:${d.cover?'var(--mint)':'var(--coral)}">封${d.cover?'✓':'✗'}</span>`;
+      html += `<span style="color:${d.banner?'var(--mint)':'var(--coral)}">Ban${d.banner?'✓':'✗'}</span>`;
+      html += `<span style="color:${d.synopsis?'var(--mint)':'var(--coral)}">简${d.synopsis?'✓':'✗'}</span>`;
+      html += `<span style="color:var(--gray)">字${sub.done}/${sub.total}</span>`;
+      html += `</div></div>`;
     });
+    html += `</div>`;
+    html += `<div id="lang-detail-panel" class="hidden mt-3" style="border:2px solid var(--border);border-radius:var(--radius-sm);overflow:hidden"><div id="lang-detail-header" class="flex items-center justify-between px-4 py-2.5" style="background:var(--gray-light);border-bottom:2px solid var(--border)"><span id="lang-detail-title" class="text-sm font-bold"></span><button class="text-xs font-bold cursor-pointer" style="color:var(--gray);background:none;border:none" onclick="closeLangDetail()">✕ 关闭</button></div><div id="lang-detail-body" class="p-4"></div></div>`;
   } else {
     html += `<div class="flex items-center gap-2 mt-4 p-3" style="background:var(--gray-light);border:2px solid var(--border);border-radius:var(--radius-sm)"><iconify-icon icon="lucide:globe" class="text-base" style="color:var(--gray)"></iconify-icon><span class="text-xs" style="color:var(--gray)">填写完英文内容后，可在「剧集管理」Tab 中添加更多语言</span></div>`;
   }
@@ -643,9 +667,75 @@ function langName(code) { const l = ALL_LANGS.find(x=>x.code===code); return l ?
 function renderAll() { renderChips(); renderStats(); renderMatrix(); renderMultiLangSection(); }
 
 function renderChips() {
-  document.getElementById('lang-chips').innerHTML = activeLangs.map(code =>
-    `<span class="lang-chip" style="background:${langBg(code)};color:${langFg(code)}"><span style="font-weight:700">${code}</span> ${langName(code)} <span class="chip-rm" onclick="removeLang('${code}')">×</span></span>`
-  ).join('');
+  const inner = document.getElementById('lang-chips-inner');
+  if (!inner) return;
+  inner.innerHTML = activeLangs.map(code => {
+    let done = 0, all = 0;
+    epData.forEach(ep => {
+      if (ep.subs[code] && ep.subs[code].status !== 'disabled') all++;
+      if (ep.subs[code] && ep.subs[code].status === 'uploaded') done++;
+    });
+    const complete = done === all && all > 0;
+    return `<span class="lang-chip" style="background:${langBg(code)};color:${langFg(code)}"><span style="font-weight:700">${code}</span> <span class="text-xs">${done}/${all}${complete?' ✓':''}</span> <span class="chip-rm" onclick="removeLang('${code}')">×</span></span>`;
+  }).join('');
+  // Check overflow and show toggle
+  requestAnimationFrame(() => {
+    const toggle = document.getElementById('lang-chips-toggle');
+    if (!toggle) return;
+    const isExpanded = inner.style.maxHeight !== '36px';
+    if (inner.scrollHeight > 40 && !isExpanded) {
+      toggle.style.display = '';
+      toggle.textContent = '展开全部 ' + activeLangs.length + ' 种语言 ▾';
+    } else if (inner.scrollHeight <= 40) {
+      toggle.style.display = 'none';
+    }
+  });
+}
+
+let chipsExpanded = false;
+function toggleChipsExpand() {
+  chipsExpanded = !chipsExpanded;
+  const inner = document.getElementById('lang-chips-inner');
+  const toggle = document.getElementById('lang-chips-toggle');
+  if (chipsExpanded) {
+    inner.style.maxHeight = inner.scrollHeight + 'px';
+    toggle.textContent = '收起 ▴';
+  } else {
+    inner.style.maxHeight = '36px';
+    toggle.textContent = '展开全部 ' + activeLangs.length + ' 种语言 ▾';
+  }
+}
+
+function openLangDetail(code) {
+  const panel = document.getElementById('lang-detail-panel');
+  const title = document.getElementById('lang-detail-title');
+  const body = document.getElementById('lang-detail-body');
+  if (!panel) return;
+  // Highlight active card
+  document.querySelectorAll('.lang-card').forEach(c => c.style.outline = 'none');
+  const card = document.querySelector(`.lang-card[data-lang="${code}"]`);
+  if (card) card.style.outline = '3px solid var(--purple)';
+  title.innerHTML = `<span style="color:${langFg(code)}">${code}</span> ${langName(code)}`;
+  const d = multiLangData[code] || {};
+  const sub = getSubCount(code);
+  let h = `<div class="grid grid-cols-1 md:grid-cols-3 gap-4">`;
+  h += buildCoverCell(code, d, 'h-28');
+  h += buildBannerCell(code, d, 'h-28');
+  h += buildSynopsisCell(code, d, 4);
+  h += `</div><div class="mt-3 pt-3" style="border-top:2px solid var(--border)"><div class="flex items-center gap-2"><span class="text-xs font-semibold">字幕</span><span class="text-xs px-2 py-0.5" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-full)">${sub.done} / ${sub.total} 集已上传</span><span class="text-xs ml-auto cursor-pointer font-semibold" style="color:var(--purple)" onclick="goToEpisodeTab()">管理字幕 →</span></div></div>`;
+  body.innerHTML = h;
+  panel.classList.remove('hidden');
+  panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function closeLangDetail() {
+  const panel = document.getElementById('lang-detail-panel');
+  if (panel) panel.classList.add('hidden');
+  document.querySelectorAll('.lang-card').forEach(c => c.style.outline = 'none');
+}
+
+function translateAllSynopsis() {
+  showToast('已触发全部语言简介翻译（Demo 演示）');
 }
 
 function renderStats() {
@@ -656,22 +746,14 @@ function renderStats() {
       if (ep.subs[code] && ep.subs[code].status === 'uploaded') totalDone++;
     });
   });
-  const bar = document.getElementById('stat-bar');
-  bar.innerHTML = `<span class="text-xs font-bold" style="color:var(--gray)">字幕总进度:</span><span class="stat-chip" style="background:var(--mint-light)"><span class="w-2 h-2 rounded-full" style="background:var(--mint)"></span> ${totalDone}/${totalAll}</span>` +
-    activeLangs.map(code => {
-      let done = 0, all = 0;
-      epData.forEach(ep => {
-        if (ep.subs[code] && ep.subs[code].status !== 'disabled') all++;
-        if (ep.subs[code] && ep.subs[code].status === 'uploaded') done++;
-      });
-      return `<span class="stat-chip" style="background:${langBg(code)};color:${langFg(code)}">${code} ${done}/${all}${done===all&&all>0?' ✓':''}</span>`;
-    }).join('');
+  const el = document.getElementById('sub-total-stat');
+  if (el) el.textContent = '字幕总进度: ' + totalDone + '/' + totalAll;
 }
 
 function renderMatrix() {
   // Dynamic header
   const thead = document.getElementById('matrix-head');
-  thead.innerHTML = `<tr><th style="width:70px;text-align:center">#</th><th>视频文件</th>${activeLangs.map(c=>`<th style="width:80px;text-align:center" title="${langName(c)}">${c}</th>`).join('')}<th style="width:60px;text-align:center">操作</th></tr>`;
+  thead.innerHTML = `<tr><th class="sticky-left" style="width:70px;text-align:center;left:0">#</th><th class="sticky-left" style="min-width:200px;left:70px">视频文件</th>${activeLangs.map(c=>`<th style="width:80px;text-align:center" title="${langName(c)}"><span class="inline-block w-2 h-2 rounded-full mr-1" style="background:${langDot(c)}"></span>${c}</th>`).join('')}<th class="sticky-right" style="width:60px;text-align:center">操作</th></tr>`;
 
   const tbody = document.getElementById('ep-tbody');
   tbody.innerHTML = '';
@@ -696,13 +778,16 @@ function renderMatrix() {
 
     // Ep #
     const tdNum = document.createElement('td');
-    tdNum.className = 'text-center font-bold heading';
+    tdNum.className = 'text-center font-bold heading sticky-left';
+    tdNum.style.left = '0';
     if (ep.video.status === 'pending') tdNum.style.color = 'var(--gray)';
     tdNum.textContent = '第' + ep.ep + '集';
     tr.appendChild(tdNum);
 
     // Video
     const tdV = document.createElement('td');
+    tdV.className = 'sticky-left';
+    tdV.style.left = '70px';
     tdV.innerHTML = buildVideoCell(ep);
     tr.appendChild(tdV);
 
@@ -726,7 +811,7 @@ function renderMatrix() {
 
     // Actions
     const tdA = document.createElement('td');
-    tdA.className = 'text-center align-middle';
+    tdA.className = 'text-center align-middle sticky-right';
     tdA.innerHTML = buildActionCell(ep);
     tr.appendChild(tdA);
 
