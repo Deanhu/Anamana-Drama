@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>漫剧详情 — 漫剧资源管理后台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FFFEF8; --white: #FFFFFF;
+      --lemon: #FFC233; --lemon-light: #FFF3D0;
+      --purple: #7C5CFC; --purple-light: #EDE8FF;
+      --mint: #34D399; --mint-light: #D1FAE5;
+      --coral: #FF6B6B; --coral-light: #FFE4E4;
+      --black: #1A1A1A; --gray: #6B7280; --gray-light: #F3F4F6;
+      --border: #1A1A1A;
+      --shadow: 4px 4px 0px #1A1A1A; --shadow-hover: 6px 6px 0px #1A1A1A;
+      --radius: 14px; --radius-sm: 10px; --radius-full: 999px;
+    }
+    body { font-family: 'Inter', 'Noto Sans SC', sans-serif; background: var(--bg); color: var(--black); }
+    h1,h2,h3,.heading { font-family: 'Space Grotesk', 'Noto Sans SC', sans-serif; }
+    .box { background: var(--white); border: 2px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .btn {
+      border: 2px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow);
+      font-family: 'Space Grotesk', sans-serif; font-weight: 600; cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn:active { transform: translate(4px, 4px); box-shadow: none; }
+    .btn-primary { background: var(--lemon); }
+    .btn-primary:hover { background: #FFB800; }
+    .btn-secondary { background: var(--white); }
+    .input-field { border: 2px solid var(--border); border-radius: var(--radius-sm); background: var(--white); outline: none; transition: box-shadow 0.15s; }
+    .input-field:focus { box-shadow: var(--shadow); }
+    .tab-pill { border: 2px solid var(--border); border-radius: var(--radius-full); font-weight: 600; cursor: pointer; transition: all 0.1s; }
+    .tab-pill.active { background: var(--black); color: var(--bg); }
+    .tab-pill:not(.active):hover { background: var(--lemon-light); }
+    .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius-sm); transition: all 0.15s; cursor: pointer; }
+    .upload-zone:hover { background: var(--lemon-light); border-style: solid; border-color: var(--lemon); }
+    .tag-pill { border: 2px solid var(--border); border-radius: var(--radius-full); font-weight: 600; display: inline-flex; align-items: center; gap: 4px; padding: 3px 12px; font-size: 13px; }
+    .tag-pill .rm { cursor: pointer; }
+    .tag-pill .rm:hover { color: var(--coral); }
+    .sub-panel { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+    .sub-panel.open { max-height: 500px; }
+    .ep-row { border: 2px solid var(--border); border-radius: var(--radius-sm); transition: transform 0.1s; background: var(--white); }
+    .ep-row:hover { transform: translate(-1px, -1px); box-shadow: var(--shadow); }
+    .fade { animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    .badge { border: 2px solid var(--border); border-radius: var(--radius-full); font-weight: 700; font-size: 11px; padding: 2px 10px; }
+    .lang-chip { border: 2px solid var(--border); border-radius: var(--radius-full); font-weight: 600; font-size: 13px; padding: 3px 10px; display: inline-flex; align-items: center; gap: 4px; cursor: default; }
+    .lang-chip .chip-rm { cursor: pointer; font-size: 14px; line-height: 1; }
+    .lang-chip .chip-rm:hover { color: var(--coral); }
+    .matrix { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .matrix th { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 12px; text-align: left; border-bottom: 2px solid var(--border); background: var(--gray-light); white-space: nowrap; }
+    .matrix td { padding: 10px 12px; border-bottom: 2px solid var(--border); vertical-align: middle; font-size: 13px; }
+    .matrix tr:last-child td { border-bottom: none; }
+    .matrix tr:hover td { background: var(--lemon-light); }
+    .sub-cell { min-width: 100px; text-align: center; cursor: pointer; position: relative; padding: 8px 6px !important; }
+    .sub-cell.uploaded { background: var(--mint-light); }
+    .sub-cell.empty { background: var(--gray-light); }
+    .sub-cell.empty:hover { background: var(--purple-light); }
+    .sub-cell .cell-filename { font-size: 10px; color: var(--gray); max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; margin: 2px auto 0; }
+    .sub-cell .cell-actions { display: none; position: absolute; inset: 0; background: rgba(26,26,26,0.85); color: #fff; align-items: center; justify-content: center; gap: 10px; font-size: 11px; font-weight: 600; }
+    .sub-cell.uploaded:hover .cell-actions { display: flex; }
+    /* Language search panel */
+    .lang-search-panel { position: absolute; top: calc(100% + 6px); left: 0; z-index: 30; width: 260px; background: var(--white); border: 2px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow); padding: 8px; }
+    .lang-search-panel input { width: 100%; padding: 6px 10px; border: 2px solid var(--border); border-radius: 6px; font-size: 13px; outline: none; margin-bottom: 6px; }
+    .lang-search-panel input:focus { box-shadow: 2px 2px 0 var(--border); }
+    .lang-search-list { max-height: 200px; overflow-y: auto; }
+    .lang-search-item { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; }
+    .lang-search-item:hover { background: var(--lemon-light); }
+    .lang-search-item.active { background: var(--mint-light); }
+    .lang-search-item .check { width: 16px; height: 16px; border: 2px solid var(--border); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+    .lang-search-item.active .check { background: var(--mint); border-color: var(--mint); color: #fff; }
+    .batch-drop { border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 32px; text-align: center; cursor: pointer; transition: all 0.15s; }
+    .batch-drop:hover { background: var(--white); border-style: solid; border-color: var(--lemon); }
+    .match-item { display: flex; align-items: center; gap: 8px; padding: 6px 10px; font-size: 13px; font-weight: 500; background: var(--white); border: 2px solid var(--border); border-radius: var(--radius-sm); }
+    .match-item.matched { border-color: var(--mint); }
+    .match-item.unmatched { border-color: var(--coral); }
+    .stat-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; padding: 2px 10px; border: 2px solid var(--border); border-radius: var(--radius-full); }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(26,26,26,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-box { background: var(--white); border: 2px solid var(--border); border-radius: var(--radius); box-shadow: 8px 8px 0px #1A1A1A; max-width: 700px; width: 92%; max-height: 85vh; overflow-y: auto; }
+    .file-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 2px solid var(--border); border-radius: var(--radius-sm); background: var(--white); transition: background 0.1s; }
+    .file-row:hover { background: var(--lemon-light); }
+    .ep-new { animation: epSlideIn 0.35s ease both; }
+    @keyframes epSlideIn { from { opacity: 0; transform: translateY(-12px); background: var(--mint-light); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body class="min-h-screen">
+
+<header style="background:var(--white);border-bottom:2px solid var(--border)" class="px-8 py-4 flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    <div class="w-10 h-10 flex items-center justify-center" style="background:var(--lemon);border:2px solid var(--border);border-radius:var(--radius-sm)">
+      <iconify-icon icon="lucide:clapperboard" class="text-xl"></iconify-icon>
+    </div>
+    <span class="heading text-lg font-bold">漫剧管理后台</span>
+  </div>
+  <div class="flex items-center gap-3">
+    <span class="text-sm font-medium" style="color:var(--gray)">Dean</span>
+    <div class="w-9 h-9 flex items-center justify-center font-bold text-sm text-white" style="background:var(--purple);border:2px solid var(--border);border-radius:var(--radius-full)">D</div>
+  </div>
+</header>
+
+<main class="max-w-[1200px] mx-auto px-8 py-8">
+  <a href="drama-list.html" class="inline-flex items-center gap-1.5 text-sm font-semibold mb-4 hover:underline" style="text-decoration:none;color:var(--gray)">
+    <iconify-icon icon="lucide:arrow-left"></iconify-icon>返回列表
+  </a>
+  <div class="flex items-end justify-between mb-8">
+    <div>
+      <div class="flex items-center gap-3">
+        <h1 id="page-title" class="text-3xl font-bold tracking-tight heading">编辑漫剧: Married The Mafioso I Saved</h1>
+        <span id="status-badge" class="text-xs font-bold px-3 py-1" style="background:var(--lemon-light);border:2px solid var(--border);border-radius:var(--radius-full)">草稿</span>
+      </div>
+      <span class="text-xs mt-1 inline-block" style="color:var(--gray)">最后保存: 2026-04-23 14:30</span>
+    </div>
+    <div class="flex items-center gap-3 shrink-0">
+      <button class="btn btn-secondary px-5 py-2.5 text-sm" onclick="location.href='drama-list.html?toast=drama_saved'">保存草稿</button>
+      <button id="publish-btn" class="btn btn-primary px-5 py-2.5 text-sm" onclick="validateAndPublish()">保存并发布</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex gap-2 mb-8">
+    <button class="tab-pill px-6 py-2.5 text-sm active" onclick="switchTab('info',this)">基本信息 & 素材</button>
+    <button class="tab-pill px-6 py-2.5 text-sm" onclick="switchTab('episodes',this)">剧集管理</button>
+  </div>
+
+  <!-- Tab 1 -->
+  <div id="tab-info" class="tab-panel fade">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="box p-6">
+        <h2 class="heading text-lg font-bold mb-5 flex items-center gap-2">
+          <span class="inline-block w-3 h-3" style="background:var(--lemon);border:2px solid var(--border);border-radius:3px"></span>基本信息
+        </h2>
+        <div class="flex flex-col gap-5">
+          <div>
+            <label class="block text-sm font-semibold mb-1.5">漫剧名称 <span style="color:var(--coral)">*</span></label>
+            <input type="text" value="Married The Mafioso I Saved" class="prefilled input-field w-full px-4 py-2.5 text-sm">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-1.5">SeriesId</label>
+            <div id="series-id-display" class="px-4 py-2.5 text-sm font-mono" style="background:var(--gray-light);border:2px solid var(--border);border-radius:var(--radius-sm);color:var(--gray)">#1000058</div>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-1.5">作者 <span style="color:var(--coral)">*</span></label>
+            <input type="text" value="Sarah Mitchell" class="prefilled input-field w-full px-4 py-2.5 text-sm">
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold mb-1.5">归属人 <span style="color:var(--coral)">*</span></label>
+              <select class="prefilled input-field w-full px-4 py-2.5 text-sm cursor-pointer">
+                <option value="Alex Morgan" selected>Alex Morgan</option>
+                <option value="Rachel Chen">Rachel Chen</option>
+                <option value="Jake Wilson">Jake Wilson</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-1.5">语言 <span style="color:var(--coral)">*</span></label>
+              <select class="prefilled input-field w-full px-4 py-2.5 text-sm cursor-pointer">
+                <option value="EN" selected>英语</option>
+                <option value="ZH">中文</option>
+                <option value="JP">日语</option>
+                <option value="KR">韩语</option>
+                <option value="ES">西班牙语</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold mb-1.5">剧来源 <span style="color:var(--coral)">*</span></label>
+              <select class="prefilled input-field w-full px-4 py-2.5 text-sm cursor-pointer">
+                <option value="原创" selected>原创</option>
+                <option value="采买">采买</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-1.5">制作模式</label>
+              <select class="prefilled input-field w-full px-4 py-2.5 text-sm cursor-pointer">
+                <option value="" selected>请选择</option>
+                <option value="自制">自制</option>
+                <option value="外包">外包</option>
+                <option value="合作">合作</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-semibold mb-1.5">横竖屏 <span style="color:var(--coral)">*</span></label>
+              <div class="flex items-center gap-4 mt-1">
+                <label class="flex items-center gap-2 cursor-pointer text-sm font-medium">
+                  <input type="radio" name="orientation" value="竖屏" checked class="accent-[var(--purple)]"> <iconify-icon icon="lucide:smartphone" class="text-base"></iconify-icon> 竖屏
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer text-sm font-medium">
+                  <input type="radio" name="orientation" value="横屏" class="accent-[var(--purple)]"> <iconify-icon icon="lucide:monitor" class="text-base"></iconify-icon> 横屏
+                </label>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-1.5">总集数 <span style="color:var(--coral)">*</span></label>
+              <input id="total-ep-input" type="number" min="1" max="9999" value="24" class="prefilled input-field w-full px-4 py-2.5 text-sm" oninput="updateTotalEpCount()">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-1.5">类型（分类）</label>
+              <select class="prefilled input-field w-full px-4 py-2.5 text-sm cursor-pointer">
+                <option value="" selected>请选择</option>
+                <option value="恋爱">恋爱</option>
+                <option value="悬疑">悬疑</option>
+                <option value="奇幻">奇幻</option>
+                <option value="都市">都市</option>
+                <option value="古风">古风</option>
+                <option value="科幻">科幻</option>
+                <option value="校园">校园</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-1.5">简介 <span style="color:var(--coral)">*</span></label>
+            <textarea id="syn-basic" rows="3" class="prefilled input-field w-full px-4 py-2.5 text-sm resize-none" oninput="updateSynCount('syn-basic',500)" maxlength="500">A thrilling drama about a woman who unknowingly saves—and marries—the most powerful mafia boss in the city, only to discover his dark secret.</textarea>
+            <div class="text-right mt-1"><span id="syn-basic-count" class="text-xs" style="color:var(--gray)">137/500</span></div>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-1.5">Tag 标签</label>
+            <div class="relative" id="tag-wrapper">
+              <div id="tag-box" class="input-field flex flex-wrap items-center gap-2 px-3 py-2.5 min-h-[44px]">
+                <span class="tag-pill" style="background:var(--purple-light)">Mafia <iconify-icon icon="lucide:x" class="rm text-xs" onclick="this.parentElement.remove()"></iconify-icon></span>
+                <span class="tag-pill" style="background:var(--coral-light)">Romance <iconify-icon icon="lucide:x" class="rm text-xs" onclick="this.parentElement.remove()"></iconify-icon></span>
+                <span class="tag-pill" style="background:var(--lemon-light)">Suspense <iconify-icon icon="lucide:x" class="rm text-xs" onclick="this.parentElement.remove()"></iconify-icon></span>
+                <input type="text" id="tag-input" placeholder="输入或从建议中选择..." class="bg-transparent outline-none text-sm flex-1 min-w-[80px]" onkeydown="if(event.key==='Enter'){addTag(this.value);this.value='';filterTagSuggestions()}" oninput="filterTagSuggestions()" onfocus="showTagSuggestions()" autocomplete="off">
+              </div>
+              <div id="tag-suggestions" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:20;background:var(--white);border:2px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:6px;max-height:180px;overflow-y:auto">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="box p-6">
+        <h2 class="heading text-lg font-bold mb-5 flex items-center gap-2">
+          <span class="inline-block w-3 h-3" style="background:var(--purple);border:2px solid var(--border);border-radius:3px"></span>素材管理
+        </h2>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="edit-only">
+            <div class="text-xs font-semibold mb-1.5">静态封面 <span style="color:var(--coral)">*</span></div>
+            <div class="relative group overflow-hidden" style="border:2px solid var(--border);border-radius:var(--radius-sm)">
+              <img src="https://v-img.crazymaplestudios.com/images/734ea7c0-3526-11f1-acb2-c14bef828c82.jpg?x-oss-process=image%2Fresize%2Cw_1080%2Fquality%2Cq_80%2Fformat%2Cwebp" class="w-full h-40 object-cover">
+              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                <div class="flex items-center gap-2">
+                  <span onclick="openImagePreview(this.closest('.group').querySelector('img').src)" class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">预览</span>
+                  <span class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">重新上传</span>
+                </div>
+              </div>
+            </div>
+            <p class="text-xs mt-1" style="color:var(--gray)">516×765px, ≤300KB</p>
+          </div>
+          <div class="edit-only">
+            <div class="text-xs font-semibold mb-1.5">静态 Banner <span style="color:var(--coral)">*</span></div>
+            <div class="relative group overflow-hidden" style="border:2px solid var(--border);border-radius:var(--radius-sm)">
+              <img src="https://picsum.photos/seed/mat3/300/120" class="w-full h-32 object-cover">
+              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                <div class="flex items-center gap-2">
+                  <span onclick="openImagePreview(this.closest('.group').querySelector('img').src)" class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">预览</span>
+                  <span class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">重新上传</span>
+                </div>
+              </div>
+            </div>
+            <p class="text-xs mt-1" style="color:var(--gray)">720×1067px, ≤500KB</p>
+            <div class="flex items-center gap-2 mt-2 px-3 py-2" style="background:var(--lemon-light);border:2px solid var(--border);border-radius:var(--radius-sm)">
+              <iconify-icon icon="lucide:alert-triangle" class="text-sm shrink-0" style="color:#d97706"></iconify-icon>
+              <span class="text-xs font-semibold">Banner 规格将于 2026-04 底更新，当前先用 720×1067，请关注 UI 团队通知</span>
+            </div>
+          </div>
+          <!-- 其他素材（选填）折叠区 -->
+          <div class="mt-4 pt-4" style="border-top:2px solid var(--border)">
+            <div class="flex items-center justify-between cursor-pointer" onclick="this.nextElementSibling.classList.toggle('hidden');this.querySelector('.opt-chevron').style.transform=this.nextElementSibling.classList.contains('hidden')?'':'rotate(90deg)'">
+              <span class="text-xs font-semibold flex items-center gap-1.5" style="color:var(--gray)"><iconify-icon icon="lucide:chevron-right" class="text-sm opt-chevron transition-transform"></iconify-icon>其他素材（选填）</span>
+            </div>
+            <div class="hidden mt-3 grid grid-cols-2 gap-4">
+              <div>
+                <div class="text-xs font-semibold mb-1.5">Logo</div>
+                <div class="upload-zone flex flex-col items-center justify-center h-20 text-center">
+                  <iconify-icon icon="lucide:upload-cloud" class="text-xl mb-1" style="color:var(--gray)"></iconify-icon>
+                  <span class="text-xs font-semibold">点击上传</span>
+                </div>
+                <p class="text-xs mt-1" style="color:var(--gray)">PNG, 200×200px</p>
+              </div>
+              <div>
+                <div class="text-xs font-semibold mb-1.5">花絮视频</div>
+                <div class="upload-zone flex flex-col items-center justify-center h-20 text-center">
+                  <iconify-icon icon="lucide:play" class="text-xl mb-1" style="color:var(--gray)"></iconify-icon>
+                  <span class="text-xs font-semibold">点击上传</span>
+                </div>
+                <p class="text-xs mt-1" style="color:var(--gray)">MP4, ≤50MB</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 多语言内容管理 -->
+    <div class="box p-6 mt-8">
+      <h2 class="heading text-lg font-bold mb-5 flex items-center gap-2">
+        <span class="inline-block w-3 h-3" style="background:var(--sky);border:2px solid var(--border);border-radius:3px"></span>多语言内容管理
+        <span id="lang-count-badge" class="text-xs font-normal px-2 py-0.5 ml-2" style="background:var(--bg);border:2px solid var(--border);border-radius:var(--radius-full)">3 语种</span>
+      </h2>
+
+      <div id="multilang-container"></div>
+
+    </div>
+  </div>
+
+  <!-- Tab 2: Episode Matrix -->
+  <div id="tab-episodes" class="tab-panel hidden">
+    <div class="box p-6">
+      <!-- Header -->
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
+        <div class="flex items-center gap-4">
+          <h2 class="heading text-lg font-bold flex items-center gap-2">
+            <span class="inline-block w-3 h-3" style="background:var(--mint);border:2px solid var(--border);border-radius:3px"></span>剧集管理
+          </h2>
+          <span id="ep-progress-text" class="text-sm"><span style="color:var(--gray)">已上传</span> <span class="font-bold">8</span><span style="color:var(--gray)"> 集 · 共 24 集</span></span>
+          <div class="w-28 h-3 overflow-hidden" style="border:2px solid var(--border);border-radius:var(--radius-full);background:var(--white)"><div class="h-full" style="width:33%;background:var(--mint)"></div></div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="btn btn-secondary px-4 py-2 text-sm" onclick="openBatchEpModal()"><iconify-icon icon="lucide:plus"></iconify-icon>批量添加剧集</button>
+          <button class="btn btn-primary px-4 py-2 text-sm" onclick="toggleBatchPanel()"><iconify-icon icon="lucide:file-up"></iconify-icon>批量上传字幕</button>
+        </div>
+      </div>
+
+      <!-- Language Selector -->
+      <div class="flex flex-wrap items-center gap-2 mb-4 p-3" style="background:var(--gray-light);border:2px solid var(--border);border-radius:var(--radius-sm)">
+        <span class="text-sm font-bold">支持字幕语言:</span>
+        <div id="lang-chips" class="flex flex-wrap items-center gap-2"></div>
+        <div class="relative">
+          <button class="btn btn-secondary px-3 py-1 text-xs" onclick="toggleLangSearch()" style="border-radius:var(--radius-full)"><iconify-icon icon="lucide:plus" class="text-xs"></iconify-icon> 添加</button>
+          <div id="lang-search-panel" class="lang-search-panel" style="display:none">
+            <div id="lang-search-count" class="text-xs font-bold mb-1.5 px-1" style="color:var(--gray)">已选 3/15 种语言</div>
+            <input type="text" id="lang-search-input" placeholder="搜索语言..." oninput="filterLangSearch()">
+            <button id="lang-toggle-all" class="w-full text-left px-2 py-1.5 text-xs font-bold cursor-pointer" style="border:2px solid var(--border);border-radius:6px;background:var(--mint-light);color:var(--black);margin-bottom:4px" onclick="toggleAllLangs()">全选 / 取消全选</button>
+            <div class="lang-search-list" id="lang-search-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subtitle Stats -->
+      <div class="flex flex-wrap items-center gap-3 mb-5" id="stat-bar">
+      </div>
+
+      <!-- Batch Upload Panel (collapsible) -->
+      <div id="batch-panel" style="max-height:0;overflow:hidden;transition:max-height 0.3s ease" class="mb-5">
+        <div class="p-5" style="border:2px solid var(--border);border-radius:var(--radius-sm);background:var(--lemon-light)">
+          <div class="flex items-center justify-between mb-3">
+            <span class="heading font-bold text-sm">批量上传字幕</span>
+            <button class="text-xs font-bold cursor-pointer" style="color:var(--gray)" onclick="toggleBatchPanel()">收起</button>
+          </div>
+          <div class="batch-drop mb-4">
+            <iconify-icon icon="lucide:upload-cloud" class="text-3xl mb-2" style="color:var(--gray)"></iconify-icon>
+            <div class="text-sm font-semibold mb-1">拖放字幕文件到此处，或点击选择</div>
+            <div class="text-xs" style="color:var(--gray)">支持 SRT / VTT · 多文件 · 自动识别文件名</div>
+          </div>
+          <div class="text-xs font-bold mb-2">文件匹配预览</div>
+          <div class="flex flex-col gap-2 mb-4">
+            <div class="match-item matched"><span class="w-2 h-2 rounded-full shrink-0" style="background:var(--mint)"></span> ep01_zh.srt <span style="color:var(--gray)">→</span> <span class="badge" style="background:var(--mint-light)">第1集</span> <span class="badge" style="background:hsl(200,70%,92%)">中文</span></div>
+            <div class="match-item matched"><span class="w-2 h-2 rounded-full shrink-0" style="background:var(--mint)"></span> ep01_en.srt <span style="color:var(--gray)">→</span> <span class="badge" style="background:var(--mint-light)">第1集</span> <span class="badge" style="background:var(--purple-light)">English</span></div>
+            <div class="match-item matched"><span class="w-2 h-2 rounded-full shrink-0" style="background:var(--mint)"></span> ep02_zh.srt <span style="color:var(--gray)">→</span> <span class="badge" style="background:var(--mint-light)">第2集</span> <span class="badge" style="background:hsl(200,70%,92%)">中文</span></div>
+            <div class="match-item unmatched"><span class="w-2 h-2 rounded-full shrink-0" style="background:var(--coral)"></span> trailer_sub.srt <span style="color:var(--coral)">✗ 无法匹配</span></div>
+          </div>
+          <div class="flex items-center gap-3">
+            <button class="btn btn-primary px-4 py-2 text-sm"><iconify-icon icon="lucide:check"></iconify-icon>确认上传 (3 个文件)</button>
+            <button class="btn btn-secondary px-4 py-2 text-sm" onclick="toggleBatchPanel()">取消</button>
+          </div>
+          <p class="text-xs mt-3" style="color:var(--gray)">文件名规则: EP01_zh.srt、ep01_en.srt、第1集_中文.srt 均可自动识别</p>
+        </div>
+      </div>
+
+      <!-- Format requirements -->
+      <div class="p-3 mb-4 flex items-start gap-2" style="background:var(--lemon-light);border:2px solid var(--border);border-radius:var(--radius-sm)">
+        <iconify-icon icon="lucide:info" class="text-base mt-0.5"></iconify-icon>
+        <span class="text-sm font-semibold">视频: MP4, H.264, 720P+, 24-60fps, ≤500MB · 字幕: SRT/VTT, UTF-8</span>
+      </div>
+
+      <!-- Episode Matrix Table -->
+      <div class="overflow-x-auto" style="border:2px solid var(--border);border-radius:var(--radius-sm)">
+        <table class="matrix" style="width:100%">
+          <thead id="matrix-head"></thead>
+          <tbody id="ep-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div id="confirm-modal" class="modal-overlay" onclick="if(event.target===this)closeConfirmModal()">
+    <div class="modal-box" style="max-width:420px">
+      <div class="flex items-center justify-between p-5" style="border-bottom:2px solid var(--border)">
+        <h3 id="confirm-title" class="heading font-bold text-lg flex items-center gap-2">
+          <iconify-icon icon="lucide:alert-triangle" class="text-xl" style="color:var(--coral)"></iconify-icon>
+        </h3>
+        <button onclick="closeConfirmModal()" class="w-8 h-8 flex items-center justify-center cursor-pointer" style="border:2px solid var(--border);border-radius:var(--radius-sm);background:var(--white)"><iconify-icon icon="lucide:x" class="text-sm"></iconify-icon></button>
+      </div>
+      <div class="p-5">
+        <p id="confirm-message" class="text-sm mb-5"></p>
+        <div class="flex justify-end gap-3">
+          <button onclick="closeConfirmModal()" class="btn btn-secondary px-5 py-2 text-sm">取消</button>
+          <button id="confirm-ok" class="btn px-5 py-2 text-sm" style="background:var(--coral);color:#fff">确认移除</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Batch Add Episodes Modal -->
+  <div id="batch-ep-modal" class="modal-overlay" onclick="if(event.target===this)closeBatchEpModal()">
+    <div class="modal-box">
+      <div class="flex items-center justify-between p-5" style="border-bottom:2px solid var(--border)">
+        <h3 class="heading font-bold text-lg flex items-center gap-2">
+          <iconify-icon icon="lucide:video" class="text-xl" style="color:var(--purple)"></iconify-icon>批量添加剧集
+        </h3>
+        <button onclick="closeBatchEpModal()" class="w-8 h-8 flex items-center justify-center cursor-pointer" style="border:2px solid var(--border);border-radius:var(--radius-sm);background:var(--white)"><iconify-icon icon="lucide:x" class="text-sm"></iconify-icon></button>
+      </div>
+      <div class="p-5">
+        <!-- State 1: Drop zone -->
+        <div id="ep-drop-zone" class="batch-drop mb-4" onclick="simulateFileSelect()">
+          <iconify-icon icon="lucide:upload-cloud" class="text-4xl mb-2" style="color:var(--gray)"></iconify-icon>
+          <div class="text-sm font-semibold mb-1">拖放视频文件到此处，或点击选择文件</div>
+          <div class="text-xs" style="color:var(--gray)">MP4 · H.264 · 720P+ · ≤500MB · 支持多选</div>
+        </div>
+        <!-- State 2: Parsed file list (hidden initially) -->
+        <div id="ep-file-list" style="display:none">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-bold">已选择 <span id="ep-file-count">4</span> 个文件</span>
+            <button class="text-xs font-bold cursor-pointer flex items-center gap-1" style="color:var(--purple)" onclick="resetEpSelect()"><iconify-icon icon="lucide:refresh-cw" class="text-xs"></iconify-icon>重新选择</button>
+          </div>
+          <div class="flex flex-col gap-2 mb-4" id="ep-parsed-files"></div>
+          <div class="p-3 mb-4 flex items-start gap-2" style="background:var(--lemon-light);border:2px solid var(--border);border-radius:var(--radius-sm)">
+            <iconify-icon icon="lucide:lightbulb" class="text-base mt-0.5" style="color:#d97706"></iconify-icon>
+            <span class="text-sm font-semibold">集数从文件名自动识别，如需调整请重新命名文件后再次选择</span>
+          </div>
+          <div class="flex items-center justify-end gap-3">
+            <button class="btn btn-secondary px-5 py-2.5 text-sm" onclick="closeBatchEpModal()">取消</button>
+            <button class="btn btn-primary px-5 py-2.5 text-sm" onclick="confirmBatchEp()"><iconify-icon icon="lucide:check"></iconify-icon>确认添加 <span id="ep-confirm-count">4</span> 集</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const colors = ['var(--purple-light)','var(--coral-light)','var(--lemon-light)','var(--mint-light)'];
+let ci = 0;
+const SUGGESTED_TAGS = ['科幻','冒险','恋爱','悬疑','都市','古风','奇幻','校园','搞笑','热血','治愈','日常'];
+function addTag(v) {
+  v = v.trim(); if (!v) return;
+  const pills = document.querySelectorAll('.tag-pill');
+  for (const p of pills) if (p.textContent.trim().replace(/×/g,'').trim() === v) return;
+  const s = document.createElement('span');
+  s.className = 'tag-pill'; s.style.background = colors[ci++ % colors.length];
+  s.innerHTML = v + ' <iconify-icon icon="lucide:x" class="rm text-xs" onclick="this.parentElement.remove()"></iconify-icon>';
+  document.getElementById('tag-input').before(s);
+  filterTagSuggestions();
+}
+function getExistingTags() {
+  return Array.from(document.querySelectorAll('#tag-box .tag-pill')).map(p => p.textContent.trim().replace(/×/g,'').trim());
+}
+function showTagSuggestions() { filterTagSuggestions(); document.getElementById('tag-suggestions').style.display = 'block'; }
+function hideTagSuggestions() { setTimeout(() => { document.getElementById('tag-suggestions').style.display = 'none'; }, 150); }
+function filterTagSuggestions() {
+  const q = (document.getElementById('tag-input').value || '').trim().toLowerCase();
+  const existing = getExistingTags();
+  const filtered = SUGGESTED_TAGS.filter(t => !existing.includes(t) && (!q || t.toLowerCase().includes(q)));
+  const el = document.getElementById('tag-suggestions');
+  if (filtered.length === 0) { el.style.display = 'none'; return; }
+  el.innerHTML = '<div class="text-xs font-semibold px-2 py-1" style="color:var(--gray)">建议标签</div>' + filtered.map(t =>
+    `<div class="flex items-center gap-2 px-2 py-1.5 text-sm font-medium cursor-pointer" style="border-radius:6px" onmouseover="this.style.background='var(--lemon-light)'" onmouseout="this.style.background=''" onmousedown="event.preventDefault();addTag('${t}');document.getElementById('tag-input').value=''">${t}</div>`
+  ).join('');
+  el.style.display = 'block';
+}
+document.addEventListener('click', function(e) {
+  const w = document.getElementById('tag-wrapper');
+  if (w && !w.contains(e.target)) document.getElementById('tag-suggestions').style.display = 'none';
+});
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => { p.classList.add('hidden'); p.classList.remove('fade'); });
+  const el = document.getElementById('tab-' + name);
+  el.classList.remove('hidden'); void el.offsetWidth; el.classList.add('fade');
+  document.querySelectorAll('.tab-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function toggleBatchPanel() {
+  const panel = document.getElementById('batch-panel');
+  if (panel.style.maxHeight === '0px' || !panel.style.maxHeight) {
+    panel.style.maxHeight = '600px';
+  } else {
+    panel.style.maxHeight = '0px';
+  }
+}
+// === Language Data Model ===
+const ALL_LANGS = [
+  {code:'EN',name:'English'},{code:'ZH',name:'中文'},{code:'JA',name:'日本語'},
+  {code:'KO',name:'한국어'},{code:'ES',name:'Español'},{code:'FR',name:'Français'},
+  {code:'TH',name:'ภาษาไทย'},{code:'PT',name:'Português'},{code:'DE',name:'Deutsch'},
+  {code:'AR',name:'العربية'},{code:'HI',name:'हिन्दी'},{code:'ID',name:'Bahasa Indonesia'},
+  {code:'VI',name:'Tiếng Việt'},{code:'TR',name:'Türkçe'},{code:'RU',name:'Русский'},
+];
+let activeLangs = ['EN','ZH','JA'];
+const epData = [
+  {ep:1,video:{status:'uploaded',file:'MarriedTheMafioso_Ep01.mp4',size:'245.6MB',dur:'24:35',thumb:true},
+    subs:{ZH:{status:'uploaded',file:'ep01_zh.srt',size:'3.1KB'},EN:{status:'uploaded',file:'ep01_en.srt',size:'2.4KB'},JA:{status:'empty'}}},
+  {ep:2,video:{status:'uploading',file:'MarriedTheMafioso_Ep02.mp4',size:'198.3MB',progress:67},
+    subs:{ZH:{status:'disabled'},EN:{status:'disabled'},JA:{status:'disabled'}}},
+  {ep:3,video:{status:'failed',file:'MarriedTheMafioso_Ep03.mp4',error:'网络连接超时，请检查网络后重试'},
+    subs:{ZH:{status:'disabled'},EN:{status:'disabled'},JA:{status:'disabled'}}},
+  {ep:4,video:{status:'format_error',file:'MarriedTheMafioso_Ep04.avi',error:'AVI 格式不支持，请使用 MP4'},
+    subs:{ZH:{status:'disabled'},EN:{status:'disabled'},JA:{status:'disabled'}}},
+];
+
+const multiLangData = {
+  EN: { cover: true, banner: true, synopsis: 'A young woman discovers she\'s been married off to a feared mafia boss to settle her family\'s debt. As she navigates the dangerous underworld, she uncovers unexpected tenderness beneath his cold exterior.', synopsisSource: 'manual' },
+  ZH: { cover: true, banner: true, synopsis: '一个年轻女子发现自己被嫁给了一个令人畏惧的黑帮老大，以偿还家人的债务。当她在危险的黑社会中周旋时，她发现了他冷酷外表下意想不到的温柔。', synopsisSource: 'auto' },
+  JA: { cover: true, banner: false, synopsis: '若い女性が、家族の借金を返すために恐れられているマフィアのボスと結婚させられたことを知る。危険な裏社会を渡り歩く中で、彼女は彼の冷たい外見の下に予想外の優しさを発見する。', synopsisSource: 'auto' },
+};
+
+function getSubCount(code) {
+  let done = 0, total = 0;
+  epData.forEach(ep => {
+    if (ep.subs[code] && ep.subs[code].status !== 'disabled') total++;
+    if (ep.subs[code] && ep.subs[code].status === 'uploaded') done++;
+  });
+  return { done, total: total || epData.length };
+}
+
+function buildCoverCell(code, data, height) {
+  if (data && data.cover) {
+    const seed = code.toLowerCase();
+    return `<div><div class="text-xs font-semibold mb-1.5">封面</div><div class="relative group overflow-hidden" style="border:2px solid var(--border);border-radius:var(--radius-sm)"><img src="https://picsum.photos/seed/cover-${seed}/300/200" class="w-full ${height} object-cover"><div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><div class="flex items-center gap-2"><span onclick="openImagePreview(this.closest('.group').querySelector('img').src)" class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">预览</span><span class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">重新上传</span></div></div></div><div class="flex items-center gap-1 mt-1"><iconify-icon icon="lucide:check-circle-2" class="text-xs" style="color:var(--mint)"></iconify-icon><span class="text-xs" style="color:var(--mint)">已上传</span><span class="text-xs ml-auto" style="color:var(--gray)">516×765px</span></div></div>`;
+  }
+  return `<div><div class="text-xs font-semibold mb-1.5">封面</div><div class="upload-zone flex flex-col items-center justify-center ${height} text-center"><iconify-icon icon="lucide:upload-cloud" class="text-2xl mb-1" style="color:var(--gray)"></iconify-icon><span class="text-xs font-semibold">点击上传</span><span class="text-xs" style="color:var(--gray)">516×765px, ≤300KB</span></div><div class="flex items-center gap-1 mt-1"><iconify-icon icon="lucide:alert-circle" class="text-xs" style="color:var(--coral)"></iconify-icon><span class="text-xs" style="color:var(--coral)">未上传</span></div></div>`;
+}
+
+function buildBannerCell(code, data, height) {
+  if (data && data.banner) {
+    const seed = code.toLowerCase();
+    return `<div><div class="text-xs font-semibold mb-1.5">Banner</div><div class="relative group overflow-hidden" style="border:2px solid var(--border);border-radius:var(--radius-sm)"><img src="https://picsum.photos/seed/banner-${seed}/300/120" class="w-full ${height} object-cover"><div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><div class="flex items-center gap-2"><span onclick="openImagePreview(this.closest('.group').querySelector('img').src)" class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">预览</span><span class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">重新上传</span></div></div></div><div class="flex items-center gap-1 mt-1"><iconify-icon icon="lucide:check-circle-2" class="text-xs" style="color:var(--mint)"></iconify-icon><span class="text-xs" style="color:var(--mint)">已上传</span><span class="text-xs ml-auto" style="color:var(--gray)">720×1067px</span></div></div>`;
+  }
+  return `<div><div class="text-xs font-semibold mb-1.5">Banner</div><div class="upload-zone flex flex-col items-center justify-center ${height} text-center"><iconify-icon icon="lucide:upload-cloud" class="text-2xl mb-1" style="color:var(--gray)"></iconify-icon><span class="text-xs font-semibold">点击上传</span><span class="text-xs" style="color:var(--gray)">720×1067px, ≤500KB</span></div><div class="flex items-center gap-1 mt-1"><iconify-icon icon="lucide:alert-circle" class="text-xs" style="color:var(--coral)"></iconify-icon><span class="text-xs" style="color:var(--coral)">未上传</span></div></div>`;
+}
+
+function buildSynopsisCell(code, data, rows) {
+  const maxLen = 500;
+  if (data && data.synopsis) {
+    const srcTag = code === 'EN' ? '' : `<span class="text-xs px-1.5 py-0.5" style="background:var(--sky);color:#fff;border-radius:var(--radius-full);font-size:10px">自动翻译</span>`;
+    const statusText = code === 'EN' ? '已填写' : '已翻译 · 可编辑';
+    const len = data.synopsis.length;
+    const countColor = len > maxLen ? 'var(--coral)' : 'var(--gray)';
+    const uid = 'syn-' + code;
+    return `<div><div class="flex items-center gap-2 mb-1.5"><span class="text-xs font-semibold">简介</span>${srcTag}</div><textarea id="${uid}" class="w-full text-xs p-2" rows="${rows}" maxlength="${maxLen}" style="border:2px solid var(--border);border-radius:var(--radius-sm);background:var(--white);resize:vertical" oninput="updateSynCount('${uid}',${maxLen})">${data.synopsis}</textarea><div class="flex items-center justify-between mt-1"><div class="flex items-center gap-1"><iconify-icon icon="lucide:check-circle-2" class="text-xs" style="color:var(--mint)"></iconify-icon><span class="text-xs" style="color:var(--mint)">${statusText}</span></div><span id="${uid}-count" class="text-xs" style="color:${countColor}">${len}/${maxLen}</span></div></div>`;
+  }
+  return `<div><div class="text-xs font-semibold mb-1.5">简介</div><div class="upload-zone flex flex-col items-center justify-center h-28 text-center"><iconify-icon icon="lucide:languages" class="text-2xl mb-1" style="color:var(--gray)"></iconify-icon><span class="text-xs font-semibold">一键翻译</span></div><div class="flex items-center gap-1 mt-1"><iconify-icon icon="lucide:alert-circle" class="text-xs" style="color:var(--coral)"></iconify-icon><span class="text-xs" style="color:var(--coral)">未翻译</span></div></div>`;
+}
+
+function statusIcon(ok) {
+  return ok
+    ? `<span style="color:var(--mint)">✓</span>`
+    : `<span style="color:var(--coral)">✗</span>`;
+}
+
+function renderMultiLangSection() {
+  const container = document.getElementById('multilang-container');
+  if (!container) return;
+  document.getElementById('lang-count-badge').textContent = activeLangs.length + ' 语种';
+
+  let html = '';
+
+  // ① Completeness summary bar
+  let coverDone = 0, bannerDone = 0, synopsisDone = 0;
+  activeLangs.forEach(code => {
+    const d = multiLangData[code] || {};
+    if (d.cover) coverDone++;
+    if (d.banner) bannerDone++;
+    if (d.synopsis) synopsisDone++;
+  });
+  const total = activeLangs.length;
+  const completeLangs = activeLangs.filter(code => { const d = multiLangData[code] || {}; return d.cover && d.banner && d.synopsis; }).length;
+  const pct = total > 0 ? Math.round(completeLangs / total * 100) : 0;
+  html += `<div class="flex flex-wrap items-center gap-3 mb-5 p-3" style="background:var(--gray-light);border:2px solid var(--border);border-radius:var(--radius-sm)">`;
+  html += `<div class="flex items-center gap-2 mr-2"><div class="w-28 h-3 overflow-hidden" style="border:2px solid var(--border);border-radius:var(--radius-full);background:var(--white)"><div class="h-full" style="width:${pct}%;background:var(--mint)"></div></div><span class="text-xs font-bold">${completeLangs}/${total} 语种完整</span></div>`;
+  html += `<span class="stat-chip" style="background:${coverDone===total?'var(--mint-light)':'var(--coral-light)'}">封面 ${coverDone}/${total}</span>`;
+  html += `<span class="stat-chip" style="background:${bannerDone===total?'var(--mint-light)':'var(--coral-light)'}">Banner ${bannerDone}/${total}</span>`;
+  html += `<span class="stat-chip" style="background:${synopsisDone===total?'var(--mint-light)':'var(--coral-light)'}">简介 ${synopsisDone}/${total}</span>`;
+  html += `<span class="stat-chip" style="background:var(--bg)">字幕详见剧集管理</span>`;
+  html += `</div>`;
+
+  const enData = multiLangData['EN'] || {};
+  const enSub = getSubCount('EN');
+
+  // EN - collapsible (default expanded)
+  html += `<div class="lang-accordion mb-4" style="border:2px solid var(--border);border-radius:var(--radius-sm);overflow:hidden">`;
+  html += `<div class="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-yellow-50 transition-colors" style="background:var(--lemon);border-bottom:2px solid var(--border)" onclick="toggleLangAccordion(event)">`;
+  html += `<div class="flex items-center gap-2"><iconify-icon icon="lucide:chevron-right" class="text-sm lang-chevron transition-transform" style="transform:rotate(90deg)"></iconify-icon><span class="text-sm font-bold">EN</span><span class="text-xs" style="color:var(--gray)">English</span><span class="text-xs font-bold px-2 py-0.5" style="background:var(--coral);color:#fff;border-radius:var(--radius-full)">必填</span></div>`;
+  html += `<div class="flex items-center gap-3 text-xs"><span style="color:${enData.cover?'var(--mint)':'var(--coral)'}">封面 ${enData.cover?'✓':'✗'}</span><span style="color:${enData.banner?'var(--mint)':'var(--coral)'}">Banner ${enData.banner?'✓':'✗'}</span><span style="color:${enData.synopsis?'var(--mint)':'var(--coral)'}">简介 ${enData.synopsis?'✓':'✗'}</span><span style="color:var(--mint)">字幕 ${enSub.done}/${enSub.total}</span></div>`;
+  html += `</div><div class="lang-content p-4" style="border-top:2px solid var(--border)"><div class="grid grid-cols-1 md:grid-cols-3 gap-4">`;
+  html += buildCoverCell('EN', enData, 'h-32');
+  html += buildBannerCell('EN', enData, 'h-32');
+  html += buildSynopsisCell('EN', enData, 5);
+  html += `</div><div class="mt-3 pt-3" style="border-top:2px solid var(--border)"><div class="flex items-center gap-2"><span class="text-xs font-semibold">字幕</span><span class="text-xs px-2 py-0.5" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-full)">${enSub.done} / ${enSub.total} 集已上传</span><span class="text-xs ml-auto cursor-pointer font-semibold" style="color:var(--purple)" onclick="goToEpisodeTab()">在「剧集管理」中管理 →</span></div></div></div></div>`;
+
+  // Other languages
+  const others = activeLangs.filter(c => c !== 'EN');
+  if (others.length > 0) {
+    html += `<div class="text-xs font-semibold mb-2 mt-6" style="color:var(--gray)">其他语言 (${others.length})</div>`;
+    others.forEach(code => {
+      const d = multiLangData[code] || {};
+      const sub = getSubCount(code);
+      html += `<div class="lang-accordion mb-2" style="border:2px solid var(--border);border-radius:var(--radius-sm);overflow:hidden">`;
+      html += `<div class="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-gray-50 transition-colors" onclick="toggleLangAccordion(event)">`;
+      html += `<div class="flex items-center gap-2"><iconify-icon icon="lucide:chevron-right" class="text-sm lang-chevron transition-transform"></iconify-icon><span class="text-sm font-bold">${code}</span><span class="text-xs" style="color:var(--gray)">${langName(code)}</span></div>`;
+      html += `<div class="flex items-center gap-3 text-xs"><span style="color:${d.cover?'var(--mint)':'var(--coral)'}">封面 ${d.cover?'✓':'✗'}</span><span style="color:${d.banner?'var(--mint)':'var(--coral)'}">Banner ${d.banner?'✓':'✗'}</span><span style="color:${d.synopsis?'var(--mint)':'var(--coral)'}">简介 ${d.synopsis?'✓':'✗'}</span><span style="color:var(--gray)">字幕 ${sub.done}/${sub.total}</span></div>`;
+      html += `</div>`;
+      html += `<div class="lang-content hidden p-4" style="border-top:2px solid var(--border)"><div class="grid grid-cols-1 md:grid-cols-3 gap-4">`;
+      html += buildCoverCell(code, d, 'h-28');
+      html += buildBannerCell(code, d, 'h-28');
+      html += buildSynopsisCell(code, d, 4);
+      html += `</div><div class="mt-3 pt-3" style="border-top:2px solid var(--border)"><div class="flex items-center gap-2"><span class="text-xs font-semibold">字幕</span><span class="text-xs px-2 py-0.5" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-full)">${sub.done} / ${sub.total} 集已上传</span><span class="text-xs ml-auto cursor-pointer font-semibold" style="color:var(--purple)" onclick="goToEpisodeTab()">管理字幕 →</span></div></div></div></div>`;
+    });
+  } else {
+    html += `<div class="flex items-center gap-2 mt-4 p-3" style="background:var(--gray-light);border:2px solid var(--border);border-radius:var(--radius-sm)"><iconify-icon icon="lucide:globe" class="text-base" style="color:var(--gray)"></iconify-icon><span class="text-xs" style="color:var(--gray)">填写完英文内容后，可在「剧集管理」Tab 中添加更多语言</span></div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+function langHue(code) {
+  let h = 0;
+  for (let i = 0; i < code.length; i++) h = code.charCodeAt(i) + ((h << 5) - h);
+  return Math.abs(h) % 360;
+}
+function langBg(code) { return `hsl(${langHue(code)}, 70%, 92%)`; }
+function langFg(code) { return `hsl(${langHue(code)}, 70%, 35%)`; }
+function langDot(code) { return `hsl(${langHue(code)}, 65%, 50%)`; }
+function langName(code) { const l = ALL_LANGS.find(x=>x.code===code); return l ? l.name : code; }
+
+function renderAll() { renderChips(); renderStats(); renderMatrix(); renderMultiLangSection(); }
+
+function renderChips() {
+  document.getElementById('lang-chips').innerHTML = activeLangs.map(code =>
+    `<span class="lang-chip" style="background:${langBg(code)};color:${langFg(code)}"><span style="font-weight:700">${code}</span> ${langName(code)} <span class="chip-rm" onclick="removeLang('${code}')">×</span></span>`
+  ).join('');
+}
+
+function renderStats() {
+  let totalDone = 0, totalAll = 0;
+  activeLangs.forEach(code => {
+    epData.forEach(ep => {
+      if (ep.subs[code] && ep.subs[code].status !== 'disabled') totalAll++;
+      if (ep.subs[code] && ep.subs[code].status === 'uploaded') totalDone++;
+    });
+  });
+  const bar = document.getElementById('stat-bar');
+  bar.innerHTML = `<span class="text-xs font-bold" style="color:var(--gray)">字幕总进度:</span><span class="stat-chip" style="background:var(--mint-light)"><span class="w-2 h-2 rounded-full" style="background:var(--mint)"></span> ${totalDone}/${totalAll}</span>` +
+    activeLangs.map(code => {
+      let done = 0, all = 0;
+      epData.forEach(ep => {
+        if (ep.subs[code] && ep.subs[code].status !== 'disabled') all++;
+        if (ep.subs[code] && ep.subs[code].status === 'uploaded') done++;
+      });
+      return `<span class="stat-chip" style="background:${langBg(code)};color:${langFg(code)}">${code} ${done}/${all}${done===all&&all>0?' ✓':''}</span>`;
+    }).join('');
+}
+
+function renderMatrix() {
+  // Dynamic header
+  const thead = document.getElementById('matrix-head');
+  thead.innerHTML = `<tr><th style="width:70px;text-align:center">#</th><th>视频文件</th>${activeLangs.map(c=>`<th style="width:80px;text-align:center" title="${langName(c)}">${c}</th>`).join('')}<th style="width:60px;text-align:center">操作</th></tr>`;
+
+  const tbody = document.getElementById('ep-tbody');
+  tbody.innerHTML = '';
+  const colCount = 3 + activeLangs.length + 1;
+
+  if (epData.length === 0) {
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = colCount;
+    td.className = 'text-center py-12';
+    td.innerHTML = `<div class="flex flex-col items-center gap-2"><iconify-icon icon="lucide:film" class="text-4xl" style="color:var(--gray)"></iconify-icon><div class="text-sm font-semibold" style="color:var(--gray)">还没有剧集</div><div class="text-xs" style="color:var(--gray)">点击上方「批量添加剧集」开始上传视频</div></div>`;
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+    return;
+  }
+
+  epData.forEach(ep => {
+    const tr = document.createElement('tr');
+    if (newlyAddedEps.has(ep.ep)) { tr.className = 'ep-new'; tr.style.animationDelay = ((ep.ep - 5) * 0.1) + 's'; }
+    if (ep.video.status === 'failed') tr.style.background = 'var(--coral-light)';
+    if (ep.video.status === 'format_error') tr.style.background = 'var(--lemon-light)';
+
+    // Ep #
+    const tdNum = document.createElement('td');
+    tdNum.className = 'text-center font-bold heading';
+    if (ep.video.status === 'pending') tdNum.style.color = 'var(--gray)';
+    tdNum.textContent = '第' + ep.ep + '集';
+    tr.appendChild(tdNum);
+
+    // Video
+    const tdV = document.createElement('td');
+    tdV.innerHTML = buildVideoCell(ep);
+    tr.appendChild(tdV);
+
+    // Per-language columns
+    activeLangs.forEach(code => {
+      const sub = ep.subs[code] || {status:'disabled'};
+      const td = document.createElement('td');
+      td.className = 'sub-cell ' + sub.status;
+      if (sub.status === 'disabled') {
+        td.style.cssText = 'opacity:0.5;cursor:not-allowed;background:var(--gray-light)';
+        td.title = ep.video.status === 'pending' ? '请先上传视频' : '视频上传中';
+        td.innerHTML = `<iconify-icon icon="lucide:minus-circle" style="color:#ccc" class="text-lg"></iconify-icon>`;
+      } else if (sub.status === 'uploaded') {
+        td.innerHTML = `<iconify-icon icon="lucide:check-circle" style="color:var(--mint)" class="text-lg"></iconify-icon><span class="cell-filename">${sub.file}</span><div class="cell-actions"><span style="cursor:pointer" onclick="openSubPreview(${ep.ep},'${code}')">预览</span><span style="cursor:pointer">替换</span><span style="cursor:pointer;color:var(--coral)">删除</span></div>`;
+      } else if (sub.status === 'empty') {
+        td.onclick = () => alert('上传字幕：第' + ep.ep + '集 ' + langName(code));
+        td.innerHTML = `<iconify-icon icon="lucide:plus-circle" style="color:var(--gray)" class="text-lg"></iconify-icon><span class="cell-filename" style="color:var(--gray)">上传</span>`;
+      }
+      tr.appendChild(td);
+    });
+
+    // Actions
+    const tdA = document.createElement('td');
+    tdA.className = 'text-center align-middle';
+    tdA.innerHTML = buildActionCell(ep);
+    tr.appendChild(tdA);
+
+    tbody.appendChild(tr);
+  });
+}
+
+function buildVideoCell(ep) {
+  const v = ep.video;
+  if (v.status === 'uploaded') return `<div class="flex items-center gap-2"><img src="https://picsum.photos/seed/ep${ep.ep}/160/90" class="w-14 h-8 object-cover shrink-0 cursor-pointer" style="border:2px solid var(--border);border-radius:4px" onclick="openSubPreview(${ep.ep},'video')" title="预览视频"><div><div class="font-semibold text-sm truncate">${v.file}</div><div class="text-xs" style="color:var(--gray)">${v.dur} · ${v.size}</div></div><span class="badge" style="background:var(--mint-light)">已上传</span></div>`;
+  if (v.status === 'uploading') return `<div class="flex items-center gap-2"><div class="w-14 h-8 flex items-center justify-center shrink-0" style="border:2px solid var(--border);border-radius:4px;background:var(--gray-light)"><iconify-icon icon="lucide:video" style="color:#ccc" class="text-sm"></iconify-icon></div><div class="flex-1"><div class="font-semibold text-sm truncate">${v.file}</div><div class="text-xs mb-1" style="color:var(--gray)">${v.size}</div><div class="w-full h-2 overflow-hidden" style="border:1.5px solid var(--border);border-radius:var(--radius-full);background:var(--white)"><div class="h-full" style="width:${v.progress}%;background:var(--purple)"></div></div></div><span class="badge" style="background:var(--purple-light)">上传中 ${v.progress}%</span></div>`;
+  if (v.status === 'failed') return `<div class="flex items-center gap-2"><div class="w-14 h-8 flex items-center justify-center shrink-0" style="border:2px solid var(--border);border-radius:4px;background:var(--gray-light)"><iconify-icon icon="lucide:video" style="color:#ccc" class="text-sm"></iconify-icon></div><div class="flex-1"><div class="flex items-center gap-2"><span class="font-semibold text-sm">${v.file}</span><span class="badge" style="background:var(--coral);color:#fff">上传失败</span></div><div class="text-xs mt-1 flex items-center gap-1"><iconify-icon icon="lucide:alert-circle" style="color:var(--coral)"></iconify-icon>${v.error}</div></div></div>`;
+  if (v.status === 'format_error') return `<div class="flex items-center gap-2"><div class="w-14 h-8 flex items-center justify-center shrink-0" style="border:2px solid var(--border);border-radius:4px;background:var(--gray-light)"><iconify-icon icon="lucide:video" style="color:#ccc" class="text-sm"></iconify-icon></div><div class="flex-1"><div class="flex items-center gap-2"><span class="font-semibold text-sm">${v.file}</span><span class="badge" style="background:var(--lemon)">格式错误</span></div><div class="text-xs mt-1 flex items-center gap-1"><iconify-icon icon="lucide:alert-triangle" style="color:#d97706"></iconify-icon>${v.error}</div></div></div>`;
+  return `<div class="flex items-center gap-2"><div class="w-14 h-8 flex items-center justify-center shrink-0" style="border:2px dashed var(--border);border-radius:4px;background:var(--white)"><iconify-icon icon="lucide:upload" style="color:var(--gray)" class="text-sm"></iconify-icon></div><span class="text-sm" style="color:var(--gray)">待上传视频</span></div>`;
+}
+
+function buildActionCell(ep) {
+  const v = ep.video;
+  if (v.status === 'uploading') return `<button class="w-7 h-7 flex items-center justify-center cursor-pointer" style="border:2px solid var(--border);border-radius:6px;background:var(--coral);color:#fff" title="取消上传"><iconify-icon icon="lucide:x" class="text-sm"></iconify-icon></button>`;
+  if (v.status === 'failed') return `<button class="btn px-2 py-1 text-xs" style="background:var(--coral);color:#fff" title="重试"><iconify-icon icon="lucide:refresh-cw" class="text-xs"></iconify-icon></button>`;
+  if (v.status === 'format_error') return `<button class="btn px-2 py-1 text-xs" style="background:var(--lemon)" title="重新上传"><iconify-icon icon="lucide:upload" class="text-xs"></iconify-icon></button>`;
+  if (v.status === 'pending') return `<button class="w-7 h-7 flex items-center justify-center cursor-pointer" style="border:2px solid var(--border);border-radius:6px;background:var(--white)" title="删除"><iconify-icon icon="lucide:trash-2" class="text-sm"></iconify-icon></button>`;
+  return `<button class="w-7 h-7 flex items-center justify-center cursor-pointer" style="border:2px solid var(--border);border-radius:6px;background:var(--white)" title="更多操作"><iconify-icon icon="lucide:more-horizontal" class="text-sm"></iconify-icon></button>`;
+}
+
+function removeLang(code) {
+  const lang = ALL_LANGS.find(l => l.code === code);
+  const name = lang ? `${lang.code} ${lang.name}` : code;
+  showConfirmModal(
+    '移除语言',
+    `确定要移除「${name}」字幕语言吗？<br><span style="color:var(--gray);font-size:13px">移除后该语言列的字幕数据不会丢失，重新添加即可恢复</span>`,
+    () => { activeLangs = activeLangs.filter(c => c !== code); renderAll(); }
+  );
+}
+
+function showConfirmModal(title, message, onConfirm) {
+  const modal = document.getElementById('confirm-modal');
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-message').innerHTML = message;
+  document.getElementById('confirm-ok').onclick = () => { modal.classList.remove('active'); onConfirm(); };
+  modal.classList.add('active');
+}
+function closeConfirmModal() { document.getElementById('confirm-modal').classList.remove('active'); }
+
+function toggleLangSearch() {
+  const panel = document.getElementById('lang-search-panel');
+  const visible = panel.style.display !== 'none';
+  panel.style.display = visible ? 'none' : '';
+  if (!visible) { document.getElementById('lang-search-input').value = ''; renderLangSearch(); setTimeout(() => document.getElementById('lang-search-input').focus(), 50); }
+}
+
+function filterLangSearch() { renderLangSearch(); }
+
+function toggleAllLangs() {
+  const allActive = activeLangs.length === ALL_LANGS.length;
+  if (allActive) {
+    activeLangs = [];
+  } else {
+    ALL_LANGS.forEach(l => {
+      if (!activeLangs.includes(l.code)) {
+        epData.forEach(ep => { if (!ep.subs[l.code]) ep.subs[l.code] = ep.video.status === 'uploaded' ? {status:'empty'} : {status:'disabled'}; });
+        activeLangs.push(l.code);
+      }
+    });
+  }
+  renderAll();
+  renderLangSearch();
+}
+
+function renderLangSearch() {
+  const q = document.getElementById('lang-search-input').value.toLowerCase();
+  // ⑪ Update selected count
+  const countEl = document.getElementById('lang-search-count');
+  if (countEl) countEl.textContent = '已选 ' + activeLangs.length + '/' + ALL_LANGS.length + ' 种语言';
+  document.getElementById('lang-search-list').innerHTML = ALL_LANGS.filter(l => l.name.toLowerCase().includes(q) || l.code.toLowerCase().includes(q)).map(l => {
+    const active = activeLangs.includes(l.code);
+    return `<div class="lang-search-item${active?' active':''}" onclick="toggleLang('${l.code}')"><span class="check">${active?'✓':''}</span><span style="font-weight:700;color:${langFg(l.code)}">${l.code}</span> ${l.name}</div>`;
+  }).join('');
+}
+
+function toggleLang(code) {
+  if (activeLangs.includes(code)) {
+    activeLangs = activeLangs.filter(c => c !== code);
+  } else {
+    epData.forEach(ep => { if (!ep.subs[code]) ep.subs[code] = ep.video.status === 'uploaded' ? {status:'empty'} : {status:'disabled'}; });
+    activeLangs.push(code);
+  }
+  renderAll();
+  renderLangSearch();
+}
+
+document.addEventListener('click', function(e) {
+  const panel = document.getElementById('lang-search-panel');
+  if (!panel) return;
+  if (!panel.parentElement.contains(e.target)) panel.style.display = 'none';
+});
+
+let newlyAddedEps = new Set();
+renderAll();
+
+// Batch Add Episodes Modal
+const demoFiles = [
+  { name: 'MarriedTheMafioso_Ep05.mp4', size: '223.1MB', ep: 5 },
+  { name: 'MarriedTheMafioso_Ep06.mp4', size: '201.8MB', ep: 6 },
+  { name: 'MarriedTheMafioso_Ep07.mp4', size: '245.4MB', ep: 7 },
+  { name: 'MarriedTheMafioso_Ep08.mp4', size: '189.7MB', ep: 8 },
+];
+function openBatchEpModal() {
+  document.getElementById('batch-ep-modal').classList.add('active');
+  resetEpSelect();
+}
+function closeBatchEpModal() {
+  document.getElementById('batch-ep-modal').classList.remove('active');
+}
+function resetEpSelect() {
+  document.getElementById('ep-drop-zone').style.display = '';
+  document.getElementById('ep-file-list').style.display = 'none';
+}
+function simulateFileSelect() {
+  document.getElementById('ep-drop-zone').style.display = 'none';
+  document.getElementById('ep-file-list').style.display = 'block';
+  const container = document.getElementById('ep-parsed-files');
+  container.innerHTML = '';
+  demoFiles.forEach((f, i) => {
+    const row = document.createElement('div');
+    row.className = 'file-row fade';
+    row.style.animationDelay = (i * 0.08) + 's';
+    row.innerHTML =
+      '<input type="checkbox" checked class="accent-[#34D399] w-4 h-4 cursor-pointer shrink-0">' +
+      '<iconify-icon icon="lucide:file-video" class="text-base shrink-0" style="color:var(--purple)"></iconify-icon>' +
+      '<span class="badge" style="background:var(--lemon-light)">EP' + String(f.ep).padStart(2,'0') + '</span>' +
+      '<span style="color:var(--gray)" class="shrink-0">→</span>' +
+      '<span class="text-sm font-bold heading shrink-0">第' + f.ep + '集</span>' +
+      '<span class="text-sm flex-1 truncate">' + f.name + '</span>' +
+      '<span class="text-xs shrink-0" style="color:var(--gray)">' + f.size + '</span>' +
+      '<iconify-icon icon="lucide:check-circle" style="color:var(--mint)" class="text-base shrink-0"></iconify-icon>';
+    container.appendChild(row);
+  });
+  document.getElementById('ep-file-count').textContent = demoFiles.length;
+  document.getElementById('ep-confirm-count').textContent = demoFiles.length;
+}
+function confirmBatchEp() {
+  newlyAddedEps.clear();
+  const checkboxes = document.querySelectorAll('#ep-parsed-files input[type=checkbox]');
+  demoFiles.forEach((f, i) => {
+    if (!checkboxes[i] || !checkboxes[i].checked) return;
+    const subs = {};
+    activeLangs.forEach(code => { subs[code] = {status:'disabled'}; });
+    epData.push({
+      ep: f.ep,
+      video: {status:'pending'},
+      subs: subs
+    });
+    newlyAddedEps.add(f.ep);
+  });
+  closeBatchEpModal();
+  openDetailEp = null;
+  renderMatrix();
+  // Update episode count in header
+  const countSpan = document.querySelector('.flex.items-center.gap-4 .text-sm');
+  if (countSpan) {
+    const uploaded = epData.filter(e => e.video.status === 'uploaded').length;
+    countSpan.innerHTML = `<span class="font-bold">${uploaded}</span><span style="color:var(--gray)"> / ${epData.length} 集</span>`;
+  }
+  // Scroll to new episodes
+  setTimeout(() => {
+    const last = document.getElementById('detail-' + demoFiles[demoFiles.length-1].ep);
+    if (last && last.previousElementSibling) last.previousElementSibling.scrollIntoView({behavior:'smooth', block:'center'});
+  }, 100);
+}
+function toggleLangAccordion(e) {
+  e = e || window.event;
+  var target = e.target || e.srcElement;
+  var accordion = target.closest('.lang-accordion');
+  if (!accordion) return;
+  var content = accordion.querySelector('.lang-content');
+  var chevron = accordion.querySelector('.lang-chevron');
+  if (content.classList.contains('hidden')) {
+    content.classList.remove('hidden');
+    chevron.style.transform = 'rotate(90deg)';
+  } else {
+    content.classList.add('hidden');
+    chevron.style.transform = '';
+  }
+}
+if (new URLSearchParams(location.search).get('mode') === 'create') {
+  document.getElementById('page-title').textContent = '创建新漫剧';
+  document.querySelectorAll('.prefilled').forEach(el => {
+    if (el.tagName==='INPUT'||el.tagName==='TEXTAREA') el.value='';
+    if (el.tagName==='SELECT') el.selectedIndex=0;
+  });
+  document.querySelectorAll('.tag-pill').forEach(el => el.remove());
+  document.querySelectorAll('.edit-only').forEach(el => el.style.display='none');
+  document.getElementById('series-id-display').textContent = '自动生成';
+  document.getElementById('series-id-display').style.fontStyle = 'italic';
+}
+function openImagePreview(src) {
+  var modal = document.getElementById('image-preview-modal');
+  document.getElementById('image-preview-img').src = src;
+  modal.classList.add('active');
+}
+function closeImagePreview() {
+  document.getElementById('image-preview-modal').classList.remove('active');
+}
+function openSubPreview(ep, lang) {
+  document.getElementById('sub-preview-modal').classList.add('active');
+  document.getElementById('sub-preview-title').textContent = '第' + ep + '集 - ' + lang.toUpperCase() + ' 字幕预览';
+}
+function closeSubPreview() {
+  document.getElementById('sub-preview-modal').classList.remove('active');
+}
+// ⑤ Cross-tab navigation from multilang subtitle links
+function goToEpisodeTab() {
+  const btn = document.querySelectorAll('.tab-pill')[1];
+  if (btn) switchTab('episodes', btn);
+  setTimeout(() => { document.getElementById('tab-episodes').scrollIntoView({behavior:'smooth', block:'start'}); }, 100);
+}
+function updateSynCount(id, max) {
+  const ta = document.getElementById(id);
+  const el = document.getElementById(id + '-count');
+  if (!ta || !el) return;
+  const len = ta.value.length;
+  el.textContent = len + '/' + max;
+  el.style.color = len > max * 0.9 ? 'var(--coral)' : 'var(--gray)';
+}
+function updateTotalEpCount() {
+  const input = document.getElementById('total-ep-input');
+  const el = document.getElementById('ep-progress-text');
+  if (!input || !el) return;
+  const total = parseInt(input.value) || 0;
+  const uploaded = document.querySelectorAll('#ep-matrix tbody tr').length;
+  el.innerHTML = '<span style="color:var(--gray)">已上传</span> <span class="font-bold">' + uploaded + '</span><span style="color:var(--gray)"> 集 · 共 ' + total + ' 集</span>';
+}
+// ⑧ Form validation on publish
+function validateAndPublish() {
+  document.querySelectorAll('.validation-error').forEach(el => {
+    el.style.borderColor = ''; el.style.boxShadow = ''; el.classList.remove('validation-error');
+  });
+  const errors = [];
+  document.querySelectorAll('#tab-info label').forEach(label => {
+    if (label.querySelector('span[style*="coral"]')) {
+      const field = label.parentElement.querySelector('input.input-field, select.input-field, textarea.input-field');
+      if (field && !field.value.trim()) {
+        field.style.borderColor = 'var(--coral)';
+        field.style.boxShadow = '0 0 0 3px var(--coral-light)';
+        field.classList.add('validation-error');
+        errors.push(field);
+        field.addEventListener('focus', function h() { this.style.borderColor=''; this.style.boxShadow=''; this.classList.remove('validation-error'); this.removeEventListener('focus',h); });
+      }
+    }
+  });
+  if (errors.length > 0) {
+    errors[0].scrollIntoView({behavior:'smooth', block:'center'});
+    showToast('请完善必填项后再发布');
+    return;
+  }
+  location.href = 'drama-list.html?toast=drama_published';
+}
+function showToast(msg) {
+  let t = document.getElementById('validation-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'validation-toast';
+    t.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:9999;padding:10px 24px;background:var(--coral);color:#fff;font-size:14px;font-weight:600;border:2px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow);transition:opacity 0.3s';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  t.style.display = '';
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => { t.style.display = 'none'; }, 300); }, 3000);
+}
+</script>
+
+<!-- 视频预览 + 字幕检查 Modal -->
+<div id="sub-preview-modal" class="modal-overlay" onclick="if(event.target===this)closeSubPreview()">
+  <div class="modal-panel" style="max-width:720px">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="heading text-base font-bold" id="sub-preview-title">字幕预览</h3>
+      <button onclick="closeSubPreview()" class="w-8 h-8 flex items-center justify-center" style="border:2px solid var(--border);border-radius:var(--radius-sm);background:var(--white)">
+        <iconify-icon icon="lucide:x" class="text-base"></iconify-icon>
+      </button>
+    </div>
+    <!-- 视频播放器占位 -->
+    <div class="relative" style="border:2px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;background:#000;aspect-ratio:16/9">
+      <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+        <iconify-icon icon="lucide:play-circle" class="text-5xl mb-3" style="color:rgba(255,255,255,0.6)"></iconify-icon>
+        <div class="text-white text-sm font-bold mb-1">视频播放器</div>
+        <div class="text-xs px-4" style="color:rgba(255,255,255,0.5)">播放视频 + 字幕叠加显示</div>
+      </div>
+      <!-- 模拟字幕条 -->
+      <div class="absolute bottom-0 left-0 right-0 p-3 text-center" style="background:rgba(0,0,0,0.7)">
+        <span class="text-white text-sm">I never thought my life would change like this...</span>
+      </div>
+    </div>
+    <!-- 提示 -->
+    <div class="flex items-center gap-2 mt-3 p-2" style="background:var(--lemon-light);border:2px solid var(--border);border-radius:var(--radius-sm)">
+      <iconify-icon icon="lucide:alert-triangle" class="text-base shrink-0" style="color:var(--coral)"></iconify-icon>
+      <span class="text-xs" style="color:var(--gray)">技术待评估：后台播放器渲染效果可能与 App 端不同，仅供参考检查</span>
+    </div>
+  </div>
+</div>
+
+<!-- 图片预览弹窗 -->
+<div id="image-preview-modal" class="modal-overlay" onclick="if(event.target===this)closeImagePreview()">
+  <div style="position:relative;max-width:90vw;max-height:90vh">
+    <button onclick="closeImagePreview()" class="w-8 h-8 flex items-center justify-center" style="position:absolute;top:-12px;right:-12px;border:2px solid var(--border);border-radius:var(--radius-sm);background:var(--white);z-index:1;cursor:pointer">
+      <iconify-icon icon="lucide:x" class="text-base"></iconify-icon>
+    </button>
+    <img id="image-preview-img" src="" style="max-width:90vw;max-height:85vh;object-fit:contain;border:2px solid var(--border);border-radius:var(--radius-sm);background:var(--white)">
+  </div>
+</div>
+
+</body>
+</html>

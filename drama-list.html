@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>漫剧列表 — 漫剧资源管理后台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#FFFEF8;--white:#FFF;--lemon:#FFC233;--lemon-light:#FFF3D0;
+      --purple:#7C5CFC;--purple-light:#EDE8FF;--mint:#34D399;--mint-light:#D1FAE5;
+      --coral:#FF6B6B;--coral-light:#FFE4E4;--black:#1A1A1A;--gray:#6B7280;--gray-light:#F3F4F6;
+      --border:#1A1A1A;--shadow:4px 4px 0 #1A1A1A;--shadow-hover:6px 6px 0 #1A1A1A;
+      --radius:14px;--radius-sm:10px;--radius-full:999px;
+    }
+    body{font-family:'Inter','Noto Sans SC',sans-serif;background:var(--bg);color:var(--black)}
+    h1,.heading{font-family:'Space Grotesk','Noto Sans SC',sans-serif}
+    .btn{border:2px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow);font-family:'Space Grotesk',sans-serif;font-weight:600;cursor:pointer;transition:transform .1s,box-shadow .1s;display:inline-flex;align-items:center;gap:6px}
+    .btn:active{transform:translate(4px,4px);box-shadow:none}
+    .btn-primary{background:var(--lemon)}.btn-primary:hover{background:#FFB800}
+    .btn-secondary{background:var(--white)}.btn-secondary:hover{background:var(--gray-light)}
+    .input-field{border:2px solid var(--border);border-radius:var(--radius-sm);background:var(--white);outline:none;transition:box-shadow .15s}
+    .input-field:focus{box-shadow:var(--shadow)}
+    .filter-pill{border:2px solid var(--border);border-radius:var(--radius-full);font-weight:600;cursor:pointer;transition:all .1s;font-size:13px}
+    .filter-pill.active{background:var(--black);color:var(--bg)}
+    .filter-pill:not(.active):hover{background:var(--lemon-light)}
+    .sort-btn{cursor:pointer;font-weight:600;font-size:13px;padding:4px 12px;border:2px solid var(--border);border-radius:var(--radius-full);transition:all .1s;background:var(--white)}
+    .sort-btn.active{background:var(--purple-light)}.sort-btn:hover{background:var(--lemon-light)}
+    .status-badge{border:2px solid var(--border);border-radius:var(--radius-full);font-weight:700;font-size:11px;padding:2px 10px;white-space:nowrap}
+    .card{background:var(--white);border:2px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s;overflow:hidden;display:block;text-decoration:none;color:inherit}
+    .card:hover{transform:translate(-2px,-2px);box-shadow:var(--shadow-hover)}
+    .card:active{transform:translate(4px,4px);box-shadow:none}
+    .page-btn{border:2px solid var(--border);border-radius:var(--radius-sm);box-shadow:3px 3px 0 #1A1A1A;font-weight:600;cursor:pointer;transition:transform .1s,box-shadow .1s;background:var(--white)}
+    .page-btn:active{transform:translate(3px,3px);box-shadow:none}
+    .page-btn.active{background:var(--black);color:var(--bg)}
+    .lang-badge-wrap:hover .lang-tooltip{display:block!important}
+    .lang-opt:hover{background:var(--lemon-light)}
+    .toast{position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-20px);opacity:0;z-index:200;display:flex;align-items:center;gap:10px;padding:14px 24px;font-weight:600;font-size:14px;border:2px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);pointer-events:none;transition:opacity .3s,transform .3s}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+    .toast-success{background:var(--mint-light)}
+  </style>
+</head>
+<body class="min-h-screen">
+
+<div id="toast" class="toast toast-success">
+  <iconify-icon icon="lucide:check-circle-2" style="color:var(--mint)" class="text-xl"></iconify-icon>
+  <span id="toast-msg">操作成功</span>
+  <button onclick="hideToast()" style="cursor:pointer;margin-left:8px;background:none;border:none;font-size:18px;line-height:1;color:var(--gray)">×</button>
+</div>
+
+<header style="background:var(--white);border-bottom:2px solid var(--border)" class="px-8 py-4 flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    <div class="w-10 h-10 flex items-center justify-center" style="background:var(--lemon);border:2px solid var(--border);border-radius:var(--radius-sm)">
+      <iconify-icon icon="lucide:clapperboard" class="text-xl"></iconify-icon>
+    </div>
+    <span class="heading text-lg font-bold">漫剧管理后台</span>
+  </div>
+  <div class="flex items-center gap-3">
+    <span class="text-sm font-medium" style="color:var(--gray)">Dean</span>
+    <div class="w-9 h-9 flex items-center justify-center font-bold text-sm text-white" style="background:var(--purple);border:2px solid var(--border);border-radius:var(--radius-full)">D</div>
+  </div>
+</header>
+
+<main class="max-w-[1400px] mx-auto px-8 py-8">
+  <div class="flex items-end justify-between mb-6">
+    <div>
+      <h1 class="text-3xl font-bold tracking-tight mb-1">漫剧列表</h1>
+      <p class="text-sm" style="color:var(--gray)">共 <span class="font-bold" style="color:var(--black)" id="total-count">60</span> 部漫剧 · 第 <span id="page-num">1</span>/3 页</p>
+    </div>
+    <a href="drama-detail.html?mode=create" class="btn btn-primary px-5 py-2.5 text-sm" style="text-decoration:none;color:var(--black)">
+      <iconify-icon icon="lucide:plus" class="text-base"></iconify-icon>创建新剧
+    </a>
+  </div>
+
+  <div class="flex flex-wrap items-center gap-4 mb-4">
+    <div class="flex items-center gap-2">
+      <button class="filter-pill px-4 py-1.5 active" data-filter="all" onclick="applyFilter(this)">全部</button>
+      <button class="filter-pill px-4 py-1.5" data-filter="草稿" onclick="applyFilter(this)">草稿</button>
+      <button class="filter-pill px-4 py-1.5" data-filter="已上线" onclick="applyFilter(this)">已上线</button>
+      <button class="filter-pill px-4 py-1.5" data-filter="已下线" onclick="applyFilter(this)">已下线</button>
+      <span style="color:var(--gray);margin:0 4px">|</span>
+      <!-- Language filter: click to toggle -->
+      <div class="relative" id="lang-filter-wrap">
+        <button class="filter-pill px-4 py-1.5 flex items-center gap-1.5" id="lang-filter-btn" style="background:var(--white)" onclick="toggleLangDropdown(event)">
+          <iconify-icon icon="lucide:globe" class="text-xs"></iconify-icon>
+          <span id="lang-filter-label">全部语言</span>
+          <iconify-icon icon="lucide:chevron-down" class="text-xs"></iconify-icon>
+        </button>
+        <div id="lang-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:20;min-width:170px;background:var(--white);border:2px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:4px">
+          <button onclick="applyLang('all')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer" style="background:var(--lemon-light)">全部语言 <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-all">60</span></button>
+          <button onclick="applyLang('EN')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">English <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-EN">0</span></button>
+          <button onclick="applyLang('ZH')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">中文 <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-ZH">0</span></button>
+          <button onclick="applyLang('JP')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">日本語 <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-JP">0</span></button>
+          <button onclick="applyLang('KR')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">한국어 <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-KR">0</span></button>
+          <button onclick="applyLang('ES')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">Español <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-ES">0</span></button>
+        </div>
+      </div>
+    </div>
+    <div class="flex-1"></div>
+    <div class="input-field flex items-center gap-2 px-4 py-2 min-w-[240px]">
+      <iconify-icon icon="lucide:search" style="color:var(--gray)"></iconify-icon>
+      <input type="text" id="search" placeholder="搜索剧名、作者..." class="bg-transparent outline-none text-sm flex-1" oninput="applySearch()">
+    </div>
+  </div>
+
+  <div class="flex items-center gap-2 mb-6">
+    <span class="text-xs font-semibold" style="color:var(--gray)">排序:</span>
+    <button class="sort-btn active" data-sort="updated" onclick="applySort(this)"><iconify-icon icon="lucide:clock" class="text-xs"></iconify-icon> 最近更新</button>
+    <button class="sort-btn" data-sort="created" onclick="applySort(this)"><iconify-icon icon="lucide:calendar-plus" class="text-xs"></iconify-icon> 创建时间</button>
+    <button class="sort-btn" data-sort="name" onclick="applySort(this)"><iconify-icon icon="lucide:arrow-down-a-z" class="text-xs"></iconify-icon> 剧名</button>
+    <button class="sort-btn" data-sort="episodes" onclick="applySort(this)"><iconify-icon icon="lucide:list-video" class="text-xs"></iconify-icon> 集数</button>
+  </div>
+
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 mb-10" id="grid"></div>
+
+  <div class="flex items-center justify-center gap-2" id="pagination"></div>
+</main>
+
+<script>
+const PER_PAGE = 20;
+let currentPage = 1, currentFilter = 'all', currentSort = 'updated', currentSearch = '', currentLang = 'all';
+
+const statuses = ['已上线','草稿','已下线'];
+const statusColors = {'已上线':'var(--mint-light)','草稿':'var(--gray-light)','已下线':'var(--coral-light)'};
+const authors = ['Sarah Mitchell','James Cooper','Emily Zhao','David Kim','Rachel Chen','Marcus Webb','Olivia Santos','Lucas Grant','Mia Thompson','Nathan Rivera','Ava Patel','Ethan Brooks','Sophia Lee','Daniel Cruz','Isabella Wang','Jack Morrison','Chloe Anderson','Ryan Foster'];
+const titles = [
+  'Married The Mafioso I Saved','Lucifer\'s Bride','She\'s Not Homeless She\'s Healer Goddess','CEO\'s Twins Want Mommy Back','The Heiress Blacklisted Her Husband','Obsessed with His Silent Bride',
+  'The Lost Quarterback Returns','Claimed by My Ex\'s Alpha Brother','You Divorced a Genius Heiress','My Contract Husband is a Billionaire','The Alpha\'s Rejected Mate','Cinderella CEO',
+  'Hidden Identity of the Billionaire Wife','Revenge of the Forsaken Luna','The Mafia Don\'s Secret Baby','Pretend Wife of the Cold CEO','Betrayed by My Alpha Mate','The CEO\'s Runaway Bride',
+  'My Billionaire Stepbrother','The Rogue Alpha\'s Claim','Saved by the Underground Boss','The Dragon King\'s Human Mate','Faking It with the Mafia Prince','The Billionaire\'s Fake Fiancee',
+  'Blood Moon Rising','The Alpha King\'s Fated Mate','Her Secret Billionaire Husband','The Don\'s Captive Heart','The Lycan Prince\'s Chosen','Mated to the Beast King',
+  'The CEO\'s Unwanted Wife','Broken Mate of the Alpha','The Billionaire\'s Accidental Bride','Dark Alpha\'s Redemption','The Mafia Heir\'s Stolen Bride','The Alpha\'s Broken Promise',
+  'My Mate is a Mafia Boss','The Billionaire\'s Second Chance','The Alpha\'s Forbidden Love','The Don\'s Redemption','The CEO\'s Secret Baby','The Alpha\'s Cursed Mate',
+  'The Mafia Boss\'s Reluctant Bride','The Alpha Duke\'s Fated Mate','The Billionaire\'s Contract Wife','The Lycan King\'s Rejected Queen','The CEO\'s Hidden Heir','The Alpha\'s Stolen Mate',
+  'The Mafia\'s Captive Luna','The Billionaire\'s Revenge','The Alpha Prince\'s Rejected Bride','The Don\'s Second Chance Mate','The CEO\'s Bought Bride','The Alpha\'s Chosen',
+  'The Mafia King\'s Fated Luna','The Billionaire\'s Forgotten Wife','The Alpha\'s Possession','The Don\'s Forced Bride','The CEO\'s Virgin Wife','The Alpha\'s Price'
+];
+
+const langs = ['EN','EN','EN','EN','EN','ES','EN','EN','KR','ES','EN','EN','EN','EN','ES','JP','EN','EN'];
+const langNames = {all:'全部语言',EN:'English',ZH:'中文',JP:'日本語',KR:'한국어',ES:'Español'};
+const orientations = ['竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏'];
+const owners = ['Alex Morgan','Rachel Chen','Alex Morgan','Jake Wilson','Rachel Chen','Alex Morgan','Jake Wilson','Alex Morgan','Rachel Chen','Jake Wilson','Alex Morgan','Rachel Chen','Jake Wilson','Alex Morgan','Rachel Chen','Jake Wilson','Alex Morgan','Rachel Chen'];
+const sources = ['Original','Licensed','Original','Licensed','Original','Licensed','Original','Licensed','Original','Licensed','Original','Licensed','Original','Licensed','Original','Licensed','Original','Licensed'];
+const covers = [
+  'https://v-img.crazymaplestudios.com/images/734ea7c0-3526-11f1-acb2-c14bef828c82.jpg?x-oss-process=image%2Fresize%2Cw_1080%2Fquality%2Cq_80%2Fformat%2Cwebp',
+  'https://v-img.crazymaplestudios.com/images/03b7de70-37c6-11f1-acb2-c14bef828c82.jpg?x-oss-process=image%2Fresize%2Cw_1080%2Fquality%2Cq_80%2Fformat%2Cwebp',
+  'https://v-img.crazymaplestudios.com/images/93866090-3527-11f1-acb2-c14bef828c82.jpg?x-oss-process=image%2Fresize%2Cw_1080%2Fquality%2Cq_80%2Fformat%2Cwebp',
+  'https://v-img.crazymaplestudios.com/images/00895940-bcf7-11ef-a2d6-41216ff1602c.jpg?x-oss-process=image%2Fresize%2Cw_1080%2Fquality%2Cq_80%2Fformat%2Cwebp',
+  'https://v-img.crazymaplestudios.com/images/3821b8f0-7211-11f0-a06b-bdb674869ea1.jpg?x-oss-process=image%2Fresize%2Cw_1080%2Fquality%2Cq_80%2Fformat%2Cwebp',
+  'https://v-img.crazymaplestudios.com/images/bd4ddf20-d6fa-11ef-a54e-99edf5fd5287.jpg?x-oss-process=image%2Fresize%2Cw_1080%2Fquality%2Cq_80%2Fformat%2Cwebp',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000007205/42000007205.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000005230/42000005230.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000007197/42000007197.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000005228/42000005228.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000007126/42000007126.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000001100/42000001100.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000006665/42000006665.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000006666/42000006666.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000003486/42000003486.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000006286/42000006286.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000005745/42000005745.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000006008/42000006008.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000005980/42000005980.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000006342/42000006342.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000005750/42000005750.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000006248/42000006248.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000005804/42000005804.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000005808/42000005808.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000005805/42000005805.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000005806/42000005806.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000006279/42000006279.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000010079/42000010079.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000010169/42000010169.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000009739/42000009739.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000010138/42000010138.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000009986/42000009986.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000010001/42000010001.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000010004/42000010004.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000010015/42000010015.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000010073/42000010073.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000009874/42000009874.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000009976/42000009976.jpg@w=300&h=400',
+  'https://thwztchapter.dramaboxdb.com/data/cppartner/4x2/42x0/420x0/42000010141/42000010141.jpg@w=300&h=400',
+];
+
+const allDramas = [];
+for (let i = 0; i < 60; i++) {
+  const d = new Date(2025, 6 + Math.floor(i/5), 1 + (i % 28));
+  const u = new Date(2026, 3, 22 - Math.floor(i * 0.4));
+  allDramas.push({
+    id: i, title: titles[i], author: authors[i % authors.length],
+    status: statuses[i % 3 === 0 ? 0 : (i % 5 === 0 ? 2 : (i % 2 === 0 ? 0 : 1))],
+    episodes: 4 + Math.floor(Math.random() * 44),
+    created: d.toISOString().slice(0,10),
+    updated: u.toISOString().slice(0,10),
+    seed: 'reelshort' + (i + 1),
+    cover: covers[i % covers.length],
+    seriesId: 1000001 + i,
+    lang: langs[i % langs.length],
+    orientation: orientations[i % orientations.length],
+    owner: owners[i % owners.length],
+    source: sources[i % sources.length],
+    supportedLangs: [langs[i % langs.length], ...(['EN','ZH','JP','KR','ES'].filter(l => l !== langs[i % langs.length]).slice(0, Math.floor(Math.random()*3)))]
+  });
+}
+allDramas.forEach(d => { if (d.status === '已上线') d.episodes = Math.max(d.episodes, 12); });
+
+function getFiltered() {
+  let list = [...allDramas];
+  if (currentFilter !== 'all') list = list.filter(d => d.status === currentFilter);
+  if (currentLang !== 'all') list = list.filter(d => d.lang === currentLang);
+  if (currentSearch) {
+    const q = currentSearch.toLowerCase();
+    list = list.filter(d => (d.title + d.author).toLowerCase().includes(q));
+  }
+  list.sort((a, b) => {
+    if (currentSort === 'updated') return b.updated.localeCompare(a.updated);
+    if (currentSort === 'created') return b.created.localeCompare(a.created);
+    if (currentSort === 'name') return a.title.localeCompare(b.title);
+    if (currentSort === 'episodes') return b.episodes - a.episodes;
+    return 0;
+  });
+  return list;
+}
+
+function render() {
+  const list = getFiltered();
+  const totalPages = Math.max(1, Math.ceil(list.length / PER_PAGE));
+  if (currentPage > totalPages) currentPage = totalPages;
+  const start = (currentPage - 1) * PER_PAGE;
+  const page = list.slice(start, start + PER_PAGE);
+
+  document.getElementById('total-count').textContent = list.length;
+  document.getElementById('page-num').textContent = currentPage;
+
+  const grid = document.getElementById('grid');
+  grid.innerHTML = page.map(d => `
+    <a href="drama-detail.html" class="card">
+      <div style="aspect-ratio:3/4;background:var(--gray-light);border-bottom:2px solid var(--border);overflow:hidden;position:relative">
+        <img src="${d.cover}" alt="${d.title}" style="width:100%;height:100%;object-fit:cover" onerror="this.src='https://picsum.photos/seed/${d.seed}/300/400'">
+        <div class="lang-badge-wrap" style="position:absolute;top:6px;left:6px;z-index:5">
+          <span style="background:var(--black);color:var(--bg);font-size:10px;font-weight:700;padding:2px 7px;border-radius:var(--radius-full);border:2px solid var(--border);cursor:default;display:inline-block">${d.lang}</span>
+          <div class="lang-tooltip" style="display:none;position:absolute;top:calc(100% + 4px);left:0;background:var(--white);border:2px solid var(--border);border-radius:var(--radius-sm);box-shadow:3px 3px 0 var(--border);padding:6px 8px;white-space:nowrap;z-index:10">
+            <div style="font-size:10px;font-weight:700;color:var(--gray);margin-bottom:4px">支持语种</div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px">
+              ${d.supportedLangs.map(l => '<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:var(--radius-full);border:2px solid var(--border);background:' + (l===d.lang?'var(--black);color:var(--bg)':'var(--white)') + '">' + l + '</span>').join('')}
+            </div>
+          </div>
+        </div>
+        <span style="position:absolute;top:6px;right:6px;background:var(--white);padding:3px;border-radius:6px;border:2px solid var(--border);line-height:0">
+          <iconify-icon icon="${d.orientation==='竖屏'?'lucide:smartphone':'lucide:monitor'}" style="font-size:14px"></iconify-icon>
+        </span>
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:6px 10px;background:linear-gradient(transparent,rgba(0,0,0,.6))">
+          <span class="status-badge" style="background:${statusColors[d.status]};font-size:10px;padding:1px 8px">${d.status}</span>
+        </div>
+      </div>
+      <div style="padding:10px 12px">
+        <div class="heading" style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.title}</div>
+        <div style="font-size:11px;color:#aaa;margin-top:2px">#${d.seriesId}</div>
+        <div style="font-size:12px;color:var(--gray);margin-top:3px">${d.author} · 归属: ${d.owner}</div>
+        <div style="font-size:12px;color:var(--gray);margin-top:2px">${d.episodes}集 · 来源: ${d.source === 'Original' ? '<span style="color:var(--mint)">原创</span>' : '<span style="color:#8B5CF6">采买</span>'} · 更新 ${d.updated}</div>
+      </div>
+    </a>
+  `).join('');
+
+  const pag = document.getElementById('pagination');
+  let html = `<button class="page-btn w-9 h-9 flex items-center justify-center text-sm" onclick="goPage(${currentPage - 1})" ${currentPage===1?'disabled style="opacity:.4;cursor:default"':''}><iconify-icon icon="lucide:chevron-left"></iconify-icon></button>`;
+  for (let i = 1; i <= totalPages; i++) {
+    html += `<button class="page-btn w-9 h-9 flex items-center justify-center text-sm ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  html += `<button class="page-btn w-9 h-9 flex items-center justify-center text-sm" onclick="goPage(${currentPage + 1})" ${currentPage===totalPages?'disabled style="opacity:.4;cursor:default"':''}><iconify-icon icon="lucide:chevron-right"></iconify-icon></button>`;
+  pag.innerHTML = html;
+
+  // Update lang counts
+  const langCounts = {all: allDramas.length, EN:0, ZH:0, JP:0, KR:0, ES:0};
+  allDramas.forEach(d => { if (langCounts[d.lang] !== undefined) langCounts[d.lang]++; });
+  Object.keys(langCounts).forEach(k => {
+    const el = document.getElementById('lang-count-' + k);
+    if (el) el.textContent = langCounts[k];
+  });
+}
+
+function goPage(n) {
+  const total = Math.ceil(getFiltered().length / PER_PAGE);
+  if (n < 1 || n > total) return;
+  currentPage = n;
+  render();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+function applyFilter(btn) {
+  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = btn.dataset.filter;
+  currentPage = 1;
+  render();
+}
+function applySearch() {
+  currentSearch = document.getElementById('search').value;
+  currentPage = 1;
+  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+  if (!currentSearch) document.querySelector('[data-filter="all"]').classList.add('active');
+  render();
+}
+function applySort(btn) {
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentSort = btn.dataset.sort;
+  currentPage = 1;
+  render();
+}
+function applyLang(lang) {
+  currentLang = lang;
+  currentPage = 1;
+  document.getElementById('lang-filter-label').textContent = langNames[lang] || lang;
+  document.querySelectorAll('.lang-opt').forEach(b => b.style.background = '');
+  if (event && event.target) {
+    const opt = event.target.closest('.lang-opt');
+    if (opt) opt.style.background = 'var(--lemon-light)';
+  }
+  const btn = document.getElementById('lang-filter-btn');
+  if (lang === 'all') { btn.classList.remove('active'); btn.style.background = 'var(--white)'; }
+  else { btn.classList.add('active'); btn.style.background = 'var(--purple-light)'; }
+  document.getElementById('lang-dropdown').style.display = 'none';
+  render();
+}
+function toggleLangDropdown(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('lang-dropdown');
+  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('lang-filter-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('lang-dropdown').style.display = 'none';
+  }
+});
+
+render();
+
+// Toast
+const toastMsgs = {
+  episodes_added: '剧集添加成功，共添加 4 集',
+  drama_saved: '漫剧已保存',
+  drama_published: '漫剧已发布',
+};
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 4000);
+}
+function hideToast() { document.getElementById('toast').classList.remove('show'); }
+const params = new URLSearchParams(location.search);
+const toastKey = params.get('toast');
+if (toastKey && toastMsgs[toastKey]) {
+  showToast(toastMsgs[toastKey]);
+  try { history.replaceState(null, '', location.pathname); } catch(e) {}
+}
+</script>
+</body>
+</html>
