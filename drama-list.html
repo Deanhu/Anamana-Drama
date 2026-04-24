@@ -40,6 +40,8 @@
     .toast{position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-20px);opacity:0;z-index:200;display:flex;align-items:center;gap:10px;padding:14px 24px;font-weight:600;font-size:14px;border:2px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);pointer-events:none;transition:opacity .3s,transform .3s}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
     .toast-success{background:var(--mint-light)}
+    .completion-chip{font-size:10px;font-weight:700;padding:1px 6px;border:1.5px solid var(--border);border-radius:var(--radius-full);white-space:nowrap;cursor:default}
+    .completion-wrap:hover .completion-tooltip{display:block!important}
   </style>
 </head>
 <body class="min-h-screen">
@@ -189,10 +191,23 @@ const allDramas = [];
 for (let i = 0; i < 60; i++) {
   const d = new Date(2025, 6 + Math.floor(i/5), 1 + (i % 28));
   const u = new Date(2026, 3, 22 - Math.floor(i * 0.4));
+  const totalEps = 4 + Math.floor(Math.random() * 44);
+  const langCount = 1 + Math.floor(Math.random() * 3);
+  const subtitleTotal = totalEps * langCount;
+  let videoUp, langComplete, subtitleUp;
+  if (i % 5 === 0) {
+    videoUp = totalEps; langComplete = langCount; subtitleUp = subtitleTotal;
+  } else if (i % 3 === 0) {
+    videoUp = totalEps; langComplete = Math.max(1, Math.floor(langCount * 0.6)); subtitleUp = Math.floor(subtitleTotal * 0.7);
+  } else if (i % 2 === 0) {
+    videoUp = Math.floor(totalEps * 0.6); langComplete = langCount; subtitleUp = Math.floor(subtitleTotal * 0.5);
+  } else {
+    videoUp = Math.floor(totalEps * 0.3); langComplete = Math.max(0, Math.floor(langCount * 0.3)); subtitleUp = Math.floor(subtitleTotal * 0.15);
+  }
   allDramas.push({
     id: i, title: titles[i], author: authors[i % authors.length],
     status: statuses[i % 3 === 0 ? 0 : (i % 5 === 0 ? 2 : (i % 2 === 0 ? 0 : 1))],
-    episodes: 4 + Math.floor(Math.random() * 44),
+    episodes: totalEps,
     created: d.toISOString().slice(0,10),
     updated: u.toISOString().slice(0,10),
     seed: 'reelshort' + (i + 1),
@@ -202,7 +217,12 @@ for (let i = 0; i < 60; i++) {
     orientation: orientations[i % orientations.length],
     owner: owners[i % owners.length],
     source: sources[i % sources.length],
-    supportedLangs: [langs[i % langs.length], ...(['EN','ZH','JP','KR','ES'].filter(l => l !== langs[i % langs.length]).slice(0, Math.floor(Math.random()*3)))]
+    supportedLangs: [langs[i % langs.length], ...(['EN','ZH','JP','KR','ES'].filter(l => l !== langs[i % langs.length]).slice(0, Math.floor(Math.random()*3)))],
+    videoUploaded: videoUp,
+    subtitleUploaded: subtitleUp,
+    subtitleTotal: subtitleTotal,
+    langConfigured: langCount,
+    langComplete: langComplete
   });
 }
 allDramas.forEach(d => { if (d.status === '已上线') d.episodes = Math.max(d.episodes, 12); });
@@ -261,6 +281,27 @@ function render() {
         <div style="font-size:11px;color:#aaa;margin-top:2px">#${d.seriesId}</div>
         <div style="font-size:12px;color:var(--gray);margin-top:3px">${d.author} · 归属: ${d.owner}</div>
         <div style="font-size:12px;color:var(--gray);margin-top:2px">${d.episodes}集 · 来源: ${d.source === 'Original' ? '<span style="color:var(--mint)">原创</span>' : '<span style="color:#8B5CF6">采买</span>'} · 更新 ${d.updated}</div>
+        ${(()=>{
+            const vPct = d.episodes > 0 ? Math.round(d.videoUploaded / d.episodes * 100) : 0;
+            const sPct = d.subtitleTotal > 0 ? Math.round(d.subtitleUploaded / d.subtitleTotal * 100) : 0;
+            const lPct = d.langConfigured > 0 ? Math.round(d.langComplete / d.langConfigured * 100) : 0;
+            const dims = [{label:'视频',pct:vPct,detail:d.videoUploaded+'/'+d.episodes},{label:'字幕',pct:sPct,detail:d.subtitleUploaded+'/'+d.subtitleTotal},{label:'语言',pct:lPct,detail:d.langComplete+'/'+d.langConfigured}];
+            const allDone = dims.every(x => x.pct >= 100);
+            const tooltipRows = dims.map(x => '<div style="display:flex;justify-content:space-between;gap:12px"><span>'+x.label+'</span><span style="font-weight:700;color:'+(x.pct>=100?'var(--mint)':x.pct>=50?'var(--lemon)':'var(--coral)')+'">'+x.detail+' ('+x.pct+'%)</span></div>').join('');
+            if (allDone) {
+              return '<div class="completion-wrap" style="margin-top:6px;position:relative">'
+                + '<span class="completion-chip" style="background:var(--mint-light);border-color:var(--mint)">✓ 已就绪</span>'
+                + '<div class="completion-tooltip" style="display:none;position:absolute;bottom:calc(100% + 6px);left:0;background:var(--white);border:2px solid var(--border);border-radius:var(--radius-sm);box-shadow:3px 3px 0 var(--border);padding:8px 10px;white-space:nowrap;z-index:10;font-size:11px;min-width:140px">' + tooltipRows + '</div>'
+                + '</div>';
+            } else {
+              const worst = dims.filter(x=>x.pct<100).sort((a,b)=>a.pct-b.pct)[0];
+              const worstColor = worst.pct >= 50 ? 'background:var(--lemon-light);border-color:var(--lemon)' : 'background:var(--coral-light);border-color:var(--coral)';
+              return '<div class="completion-wrap" style="margin-top:6px;position:relative">'
+                + '<span class="completion-chip" style="' + worstColor + '">' + worst.label + ' ' + worst.pct + '%</span>'
+                + '<div class="completion-tooltip" style="display:none;position:absolute;bottom:calc(100% + 6px);left:0;background:var(--white);border:2px solid var(--border);border-radius:var(--radius-sm);box-shadow:3px 3px 0 var(--border);padding:8px 10px;white-space:nowrap;z-index:10;font-size:11px;min-width:140px">' + tooltipRows + '</div>'
+                + '</div>';
+            }
+          })()}
       </div>
     </a>
   `).join('');
