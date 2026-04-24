@@ -253,7 +253,7 @@
         <h2 class="heading text-lg font-bold mb-5 flex items-center gap-2">
           <span class="inline-block w-3 h-3" style="background:var(--purple);border:2px solid var(--border);border-radius:3px"></span>素材管理
         </h2>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4">
           <div class="edit-only">
             <div class="text-xs font-semibold mb-1.5">静态封面 <span style="color:var(--coral)">*</span></div>
             <div class="relative group overflow-hidden" style="border:2px solid var(--border);border-radius:var(--radius-sm)">
@@ -266,23 +266,6 @@
               </div>
             </div>
             <p class="text-xs mt-1" style="color:var(--gray)">516×765px, ≤300KB</p>
-          </div>
-          <div class="edit-only">
-            <div class="text-xs font-semibold mb-1.5">静态 Banner <span style="color:var(--coral)">*</span></div>
-            <div class="relative group overflow-hidden" style="border:2px solid var(--border);border-radius:var(--radius-sm)">
-              <img src="https://picsum.photos/seed/mat3/300/120" class="w-full h-32 object-cover">
-              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <div class="flex items-center gap-2">
-                  <span onclick="openImagePreview(this.closest('.group').querySelector('img').src)" class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">预览</span>
-                  <span class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">重新上传</span>
-                </div>
-              </div>
-            </div>
-            <p class="text-xs mt-1" style="color:var(--gray)">720×1067px, ≤500KB</p>
-            <div class="flex items-center gap-2 mt-2 px-3 py-2" style="background:var(--lemon-light);border:2px solid var(--border);border-radius:var(--radius-sm)">
-              <iconify-icon icon="lucide:alert-triangle" class="text-sm shrink-0" style="color:#d97706"></iconify-icon>
-              <span class="text-xs font-semibold">Banner 规格将于 2026-04 底更新，当前先用 720×1067，请关注 UI 团队通知</span>
-            </div>
           </div>
           <!-- 其他素材（选填）折叠区 -->
           <div class="mt-4 pt-4" style="border-top:2px solid var(--border)">
@@ -534,9 +517,9 @@ const epData = [
 ];
 
 const multiLangData = {
-  EN: { cover: true, banner: true, synopsis: 'A young woman discovers she\'s been married off to a feared mafia boss to settle her family\'s debt. As she navigates the dangerous underworld, she uncovers unexpected tenderness beneath his cold exterior.', synopsisSource: 'manual' },
-  ZH: { cover: true, banner: true, synopsis: '一个年轻女子发现自己被嫁给了一个令人畏惧的黑帮老大，以偿还家人的债务。当她在危险的黑社会中周旋时，她发现了他冷酷外表下意想不到的温柔。', synopsisSource: 'auto' },
-  JA: { cover: true, banner: false, synopsis: '若い女性が、家族の借金を返すために恐れられているマフィアのボスと結婚させられたことを知る。危険な裏社会を渡り歩く中で、彼女は彼の冷たい外見の下に予想外の優しさを発見する。', synopsisSource: 'auto' },
+  EN: { title: 'Married The Mafioso I Saved', titleSource: 'manual', cover: true, synopsis: 'A young woman discovers she\'s been married off to a feared mafia boss to settle her family\'s debt. As she navigates the dangerous underworld, she uncovers unexpected tenderness beneath his cold exterior.', synopsisSource: 'manual' },
+  ZH: { title: '我救下的黑帮大佬成了我的丈夫', titleSource: 'auto', cover: true, synopsis: '一个年轻女子发现自己被嫁给了一个令人畏惧的黑帮老大，以偿还家人的债务。当她在危险的黑社会中周旋时，她发现了他冷酷外表下意想不到的温柔。', synopsisSource: 'auto' },
+  JA: { title: '救ったマフィアが私の夫に', titleSource: 'auto', cover: true, synopsis: '若い女性が、家族の借金を返すために恐れられているマフィアのボスと結婚させられたことを知る。危険な裏社会を渡り歩く中で、彼女は彼の冷たい外見の下に予想外の優しさを発見する。', synopsisSource: 'auto' },
 };
 
 function getSubCount(code) {
@@ -556,12 +539,17 @@ function buildCoverCell(code, data, height) {
   return `<div><div class="text-xs font-semibold mb-1.5">封面</div><div class="upload-zone flex flex-col items-center justify-center ${height} text-center"><iconify-icon icon="lucide:upload-cloud" class="text-2xl mb-1" style="color:var(--gray)"></iconify-icon><span class="text-xs font-semibold">点击上传</span><span class="text-xs" style="color:var(--gray)">516×765px, ≤300KB</span></div><div class="flex items-center gap-1 mt-1"><iconify-icon icon="lucide:alert-circle" class="text-xs" style="color:var(--coral)"></iconify-icon><span class="text-xs" style="color:var(--coral)">未上传</span></div></div>`;
 }
 
-function buildBannerCell(code, data, height) {
-  if (data && data.banner) {
-    const seed = code.toLowerCase();
-    return `<div><div class="text-xs font-semibold mb-1.5">Banner</div><div class="relative group overflow-hidden" style="border:2px solid var(--border);border-radius:var(--radius-sm)"><img src="https://picsum.photos/seed/banner-${seed}/300/120" class="w-full ${height} object-cover"><div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><div class="flex items-center gap-2"><span onclick="openImagePreview(this.closest('.group').querySelector('img').src)" class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">预览</span><span class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">重新上传</span></div></div></div><div class="flex items-center gap-1 mt-1"><iconify-icon icon="lucide:check-circle-2" class="text-xs" style="color:var(--mint)"></iconify-icon><span class="text-xs" style="color:var(--mint)">已上传</span><span class="text-xs ml-auto" style="color:var(--gray)">720×1067px</span></div></div>`;
+function buildTitleCell(code, data) {
+  const maxLen = 120;
+  if (data && data.title) {
+    const srcTag = code === 'EN' ? '' : `<span class="text-xs px-1.5 py-0.5" style="background:var(--purple);color:#fff;border-radius:var(--radius-full);font-size:10px">自动翻译</span>`;
+    const statusText = code === 'EN' ? '已填写' : '已翻译 · 可编辑';
+    const len = data.title.length;
+    const countColor = len > maxLen ? 'var(--coral)' : 'var(--gray)';
+    const uid = 'title-' + code;
+    return `<div><div class="flex items-center gap-2 mb-1.5"><span class="text-xs font-semibold">剧集名</span>${srcTag}</div><input id="${uid}" type="text" class="w-full text-xs p-2" maxlength="${maxLen}" style="border:2px solid var(--border);border-radius:var(--radius-sm);background:var(--white)" value="${data.title}" oninput="updateSynCount('${uid}',${maxLen})"><div class="flex items-center justify-between mt-1"><div class="flex items-center gap-1"><iconify-icon icon="lucide:check-circle-2" class="text-xs" style="color:var(--mint)"></iconify-icon><span class="text-xs" style="color:var(--mint)">${statusText}</span></div><span id="${uid}-count" class="text-xs" style="color:${countColor}">${len}/${maxLen}</span></div></div>`;
   }
-  return `<div><div class="text-xs font-semibold mb-1.5">Banner</div><div class="upload-zone flex flex-col items-center justify-center ${height} text-center"><iconify-icon icon="lucide:upload-cloud" class="text-2xl mb-1" style="color:var(--gray)"></iconify-icon><span class="text-xs font-semibold">点击上传</span><span class="text-xs" style="color:var(--gray)">720×1067px, ≤500KB</span></div><div class="flex items-center gap-1 mt-1"><iconify-icon icon="lucide:alert-circle" class="text-xs" style="color:var(--coral)"></iconify-icon><span class="text-xs" style="color:var(--coral)">未上传</span></div></div>`;
+  return `<div><div class="text-xs font-semibold mb-1.5">剧集名</div><div class="upload-zone flex flex-col items-center justify-center h-20 text-center"><iconify-icon icon="lucide:languages" class="text-2xl mb-1" style="color:var(--gray)"></iconify-icon><span class="text-xs font-semibold">一键翻译</span></div><div class="flex items-center gap-1 mt-1"><iconify-icon icon="lucide:alert-circle" class="text-xs" style="color:var(--coral)"></iconify-icon><span class="text-xs" style="color:var(--coral)">未翻译</span></div></div>`;
 }
 
 function buildSynopsisCell(code, data, rows) {
@@ -591,23 +579,23 @@ function renderMultiLangSection() {
   let html = '';
 
   // ① Completeness summary bar
-  let coverDone = 0, bannerDone = 0, synopsisDone = 0;
+  let titleDone = 0, coverDone = 0, synopsisDone = 0;
   activeLangs.forEach(code => {
     const d = multiLangData[code] || {};
+    if (d.title) titleDone++;
     if (d.cover) coverDone++;
-    if (d.banner) bannerDone++;
     if (d.synopsis) synopsisDone++;
   });
   const total = activeLangs.length;
-  const completeLangs = activeLangs.filter(code => { const d = multiLangData[code] || {}; return d.cover && d.banner && d.synopsis; }).length;
+  const completeLangs = activeLangs.filter(code => { const d = multiLangData[code] || {}; return d.title && d.cover && d.synopsis; }).length;
   const pct = total > 0 ? Math.round(completeLangs / total * 100) : 0;
   html += `<div class="flex flex-wrap items-center gap-3 mb-5 p-3" style="background:var(--gray-light);border:2px solid var(--border);border-radius:var(--radius-sm)">`;
   html += `<div class="flex items-center gap-2 mr-2"><div class="w-28 h-3 overflow-hidden" style="border:2px solid var(--border);border-radius:var(--radius-full);background:var(--white)"><div class="h-full" style="width:${pct}%;background:var(--mint)"></div></div><span class="text-xs font-bold">${completeLangs}/${total} 语种完整</span></div>`;
+  var titleBg = titleDone===total ? 'var(--mint-light)' : 'var(--coral-light)';
   var covBg = coverDone===total ? 'var(--mint-light)' : 'var(--coral-light)';
-  var banBg = bannerDone===total ? 'var(--mint-light)' : 'var(--coral-light)';
   var synBg = synopsisDone===total ? 'var(--mint-light)' : 'var(--coral-light)';
+  html += '<span class="stat-chip" style="background:' + titleBg + '">剧集名 ' + titleDone + '/' + total + '</span>';
   html += '<span class="stat-chip" style="background:' + covBg + '">封面 ' + coverDone + '/' + total + '</span>';
-  html += '<span class="stat-chip" style="background:' + banBg + '">Banner ' + bannerDone + '/' + total + '</span>';
   html += '<span class="stat-chip" style="background:' + synBg + '">简介 ' + synopsisDone + '/' + total + '</span>';
   html += `<span class="stat-chip" style="background:var(--bg)">字幕详见剧集管理</span>`;
   html += `</div>`;
@@ -619,37 +607,37 @@ function renderMultiLangSection() {
   html += `<div class="lang-accordion mb-4" style="border:2px solid var(--border);border-radius:var(--radius-sm);overflow:hidden">`;
   html += `<div class="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-yellow-50 transition-colors" style="background:var(--lemon);border-bottom:2px solid var(--border)" onclick="toggleLangAccordion(event)">`;
   html += `<div class="flex items-center gap-2"><iconify-icon icon="lucide:chevron-right" class="text-sm lang-chevron transition-transform" style="transform:rotate(90deg)"></iconify-icon><span class="text-sm font-bold">EN</span><span class="text-xs" style="color:var(--gray)">English</span><span class="text-xs font-bold px-2 py-0.5" style="background:var(--coral);color:#fff;border-radius:var(--radius-full)">必填</span></div>`;
+  var enTitleC = enData.title ? 'var(--mint)' : 'var(--coral)';
   var enCovC = enData.cover ? 'var(--mint)' : 'var(--coral)';
-  var enBanC = enData.banner ? 'var(--mint)' : 'var(--coral)';
   var enSynC = enData.synopsis ? 'var(--mint)' : 'var(--coral)';
-  html += '<div class="flex items-center gap-3 text-xs">' + '<span style="color:' + enCovC + '">封面 ' + (enData.cover ? '✓' : '✗') + '</span>' + '<span style="color:' + enBanC + '">Banner ' + (enData.banner ? '✓' : '✗') + '</span>' + '<span style="color:' + enSynC + '">简介 ' + (enData.synopsis ? '✓' : '✗') + '</span>' + '<span style="color:var(--mint)">字幕 ' + enSub.done + '/' + enSub.total + '</span></div>';
+  html += '<div class="flex items-center gap-3 text-xs">' + '<span style="color:' + enTitleC + '">剧集名 ' + (enData.title ? '✓' : '✗') + '</span>' + '<span style="color:' + enCovC + '">封面 ' + (enData.cover ? '✓' : '✗') + '</span>' + '<span style="color:' + enSynC + '">简介 ' + (enData.synopsis ? '✓' : '✗') + '</span>' + '<span style="color:var(--mint)">字幕 ' + enSub.done + '/' + enSub.total + '</span></div>';
   html += `</div><div class="lang-content p-4" style="border-top:2px solid var(--border)"><div class="grid grid-cols-1 md:grid-cols-3 gap-4">`;
+  html += buildTitleCell('EN', enData);
   html += buildCoverCell('EN', enData, 'h-32');
-  html += buildBannerCell('EN', enData, 'h-32');
   html += buildSynopsisCell('EN', enData, 5);
   html += `</div><div class="mt-3 pt-3" style="border-top:2px solid var(--border)"><div class="flex items-center gap-2"><span class="text-xs font-semibold">字幕</span><span class="text-xs px-2 py-0.5" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-full)">${enSub.done} / ${enSub.total} 集已上传</span><span class="text-xs ml-auto cursor-pointer font-semibold" style="color:var(--purple)" onclick="goToEpisodeTab()">在「剧集管理」中管理 →</span></div></div></div></div>`;
 
   // Other languages — compact card grid
   const others = activeLangs.filter(c => c !== 'EN');
   if (others.length > 0) {
-    html += `<div class="flex items-center justify-between mt-6 mb-2"><div class="text-xs font-semibold" style="color:var(--gray)">其他语言 (${others.length})</div><button class="text-xs font-bold cursor-pointer" style="color:var(--purple);background:none;border:none" onclick="translateAllSynopsis()"><iconify-icon icon="lucide:languages" class="text-xs"></iconify-icon> 一键翻译全部简介</button></div>`;
+    html += `<div class="flex items-center justify-between mt-6 mb-2"><div class="text-xs font-semibold" style="color:var(--gray)">其他语言 (${others.length})</div><button class="text-xs font-bold cursor-pointer" style="color:var(--purple);background:none;border:none" onclick="translateAllText()"><iconify-icon icon="lucide:languages" class="text-xs"></iconify-icon> 一键翻译全部文本</button></div>`;
     html += `<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2" id="lang-card-grid">`;
     others.forEach(code => {
       const d = multiLangData[code] || {};
       const sub = getSubCount(code);
-      const items = [d.cover, d.banner, d.synopsis];
+      const items = [d.title, d.cover, d.synopsis];
       const done = items.filter(Boolean).length;
       const allDone = done === 3;
       const borderColor = allDone ? 'var(--mint)' : 'var(--border)';
       const bgColor = allDone ? 'var(--mint-light)' : 'var(--white)';
       html += `<div class="lang-card cursor-pointer" data-lang="${code}" onclick="openLangDetail('${code}')" style="border:2px solid ${borderColor};border-radius:var(--radius-sm);padding:10px 12px;background:${bgColor};transition:all 0.15s">`;
       html += `<div class="flex items-center justify-between mb-1.5"><span class="font-bold text-sm heading" style="color:${langFg(code)}">${code}</span><span class="text-xs" style="color:var(--gray)">${langName(code)}</span></div>`;
+      var cTitle = d.title ? 'var(--mint)' : 'var(--coral)';
       var cCov = d.cover ? 'var(--mint)' : 'var(--coral)';
-      var cBan = d.banner ? 'var(--mint)' : 'var(--coral)';
       var cSyn = d.synopsis ? 'var(--mint)' : 'var(--coral)';
       html += '<div class="flex items-center gap-2 text-xs">';
+      html += '<span style="color:' + cTitle + '">名' + (d.title ? '✓' : '✗') + '</span>';
       html += '<span style="color:' + cCov + '">封' + (d.cover ? '✓' : '✗') + '</span>';
-      html += '<span style="color:' + cBan + '">Ban' + (d.banner ? '✓' : '✗') + '</span>';
       html += '<span style="color:' + cSyn + '">简' + (d.synopsis ? '✓' : '✗') + '</span>';
       html += '<span style="color:var(--gray)">字' + sub.done + '/' + sub.total + '</span>';
       html += `</div></div>`;
@@ -728,8 +716,8 @@ function openLangDetail(code) {
   const d = multiLangData[code] || {};
   const sub = getSubCount(code);
   let h = `<div class="grid grid-cols-1 md:grid-cols-3 gap-4">`;
+  h += buildTitleCell(code, d);
   h += buildCoverCell(code, d, 'h-28');
-  h += buildBannerCell(code, d, 'h-28');
   h += buildSynopsisCell(code, d, 4);
   h += `</div><div class="mt-3 pt-3" style="border-top:2px solid var(--border)"><div class="flex items-center gap-2"><span class="text-xs font-semibold">字幕</span><span class="text-xs px-2 py-0.5" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-full)">${sub.done} / ${sub.total} 集已上传</span><span class="text-xs ml-auto cursor-pointer font-semibold" style="color:var(--purple)" onclick="goToEpisodeTab()">管理字幕 →</span></div></div>`;
   body.innerHTML = h;
@@ -743,8 +731,8 @@ function closeLangDetail() {
   document.querySelectorAll('.lang-card').forEach(c => c.style.outline = 'none');
 }
 
-function translateAllSynopsis() {
-  showToast('已触发全部语言简介翻译（Demo 演示）');
+function translateAllText() {
+  showToast('已触发全部语言剧集名和简介翻译（Demo 演示）');
 }
 
 function renderStats() {
