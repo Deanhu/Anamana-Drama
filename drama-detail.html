@@ -110,6 +110,11 @@
       <iconify-icon icon="lucide:clapperboard" class="text-xl"></iconify-icon>
     </div>
     <span class="heading text-lg font-bold">漫剧管理后台</span>
+    <nav class="flex items-center gap-1 ml-6">
+      <a href="drama-list.html" class="text-sm font-semibold px-3 py-1 rounded-lg" style="background:var(--lemon-light);text-decoration:none;color:var(--black)">漫剧</a>
+      <a href="tag-list.html" class="text-sm font-semibold px-3 py-1 rounded-lg" style="text-decoration:none;color:var(--gray)">标签</a>
+      <a href="author-list.html" class="text-sm font-semibold px-3 py-1 rounded-lg" style="text-decoration:none;color:var(--gray)">作者</a>
+    </nav>
   </div>
   <div class="flex items-center gap-3">
     <span class="text-sm font-medium" style="color:var(--gray)">Dean</span>
@@ -159,7 +164,14 @@
           </div>
           <div>
             <label class="block text-sm font-semibold mb-1.5">作者 <span style="color:var(--coral)">*</span></label>
-            <input type="text" value="Sarah Mitchell" class="prefilled input-field w-full px-4 py-2.5 text-sm">
+            <select class="prefilled input-field w-full px-4 py-2.5 text-sm cursor-pointer">
+	              <option value="">请选择作者</option>
+	              <option value="Sarah Mitchell" selected>Sarah Mitchell</option>
+	              <option value="James Cooper">James Cooper</option>
+	              <option value="Emily Zhao">Emily Zhao</option>
+	              <option value="David Kim">David Kim</option>
+	              <option value="Rachel Chen">Rachel Chen</option>
+	            </select>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
@@ -173,11 +185,21 @@
             <div>
               <label class="block text-sm font-semibold mb-1.5">语言 <span style="color:var(--coral)">*</span></label>
               <select class="prefilled input-field w-full px-4 py-2.5 text-sm cursor-pointer">
-                <option value="EN" selected>英语</option>
-                <option value="ZH">中文</option>
-                <option value="JP">日语</option>
-                <option value="KR">韩语</option>
-                <option value="ES">西班牙语</option>
+                <option value="EN" selected>EN · 英语</option>
+                <option value="ZH">ZH · 中文</option>
+                <option value="JA">JA · 日本語</option>
+                <option value="KO">KO · 한국어</option>
+                <option value="ES">ES · Español</option>
+                <option value="FR">FR · Français</option>
+                <option value="TH">TH · ไทย</option>
+                <option value="PT">PT · Português</option>
+                <option value="DE">DE · Deutsch</option>
+                <option value="AR">AR · العربية</option>
+                <option value="HI">HI · हिन्दी</option>
+                <option value="ID">ID · Bahasa Indonesia</option>
+                <option value="VI">VI · Tiếng Việt</option>
+                <option value="TR">TR · Türkçe</option>
+                <option value="RU">RU · Русский</option>
               </select>
             </div>
           </div>
@@ -185,17 +207,19 @@
             <div>
               <label class="block text-sm font-semibold mb-1.5">剧来源 <span style="color:var(--coral)">*</span></label>
               <select class="prefilled input-field w-full px-4 py-2.5 text-sm cursor-pointer">
-                <option value="原创" selected>原创</option>
-                <option value="采买">采买</option>
+                <option value="全包采买剧" selected>全包采买剧</option>
+                <option value="内部剧">内部剧</option>
+                <option value="外部合作剧">外部合作剧</option>
               </select>
             </div>
             <div>
-              <label class="block text-sm font-semibold mb-1.5">制作模式</label>
+              <label class="block text-sm font-semibold mb-1.5">制作模式 <span style="color:var(--coral)">*</span></label>
               <select class="prefilled input-field w-full px-4 py-2.5 text-sm cursor-pointer">
                 <option value="" selected>请选择</option>
-                <option value="自制">自制</option>
-                <option value="外包">外包</option>
-                <option value="合作">合作</option>
+                <option value="剧转剧">剧转剧</option>
+                <option value="文生剧">文生剧</option>
+                <option value="漫转剧">漫转剧</option>
+                <option value="成品剧">成品剧</option>
               </select>
             </div>
           </div>
@@ -237,13 +261,13 @@
           <div>
             <label class="block text-sm font-semibold mb-1.5">Tag 标签</label>
             <div class="relative" id="tag-wrapper">
-              <div id="tag-box" class="input-field flex flex-wrap items-center gap-2 px-3 py-2.5 min-h-[44px]">
-                <span class="tag-pill" style="background:var(--purple-light)">Mafia <iconify-icon icon="lucide:x" class="rm text-xs" onclick="this.parentElement.remove()"></iconify-icon></span>
-                <span class="tag-pill" style="background:var(--coral-light)">Romance <iconify-icon icon="lucide:x" class="rm text-xs" onclick="this.parentElement.remove()"></iconify-icon></span>
-                <span class="tag-pill" style="background:var(--lemon-light)">Suspense <iconify-icon icon="lucide:x" class="rm text-xs" onclick="this.parentElement.remove()"></iconify-icon></span>
-                <input type="text" id="tag-input" placeholder="输入或从建议中选择..." class="bg-transparent outline-none text-sm flex-1 min-w-[80px]" onkeydown="if(event.key==='Enter'){addTag(this.value);this.value='';filterTagSuggestions()}" oninput="filterTagSuggestions()" onfocus="showTagSuggestions()" autocomplete="off">
+              <div id="tag-box" class="input-field flex flex-wrap items-center gap-2 px-3 py-2.5 min-h-[44px] cursor-pointer" onclick="toggleTagDropdown()">
+                <span class="tag-pill" style="background:var(--purple-light)">Mafia <iconify-icon icon="lucide:x" class="rm text-xs" onclick="event.stopPropagation();this.parentElement.remove()"></iconify-icon></span>
+                <span class="tag-pill" style="background:var(--coral-light)">Romance <iconify-icon icon="lucide:x" class="rm text-xs" onclick="event.stopPropagation();this.parentElement.remove()"></iconify-icon></span>
+                <span class="tag-pill" style="background:var(--lemon-light)">Suspense <iconify-icon icon="lucide:x" class="rm text-xs" onclick="event.stopPropagation();this.parentElement.remove()"></iconify-icon></span>
+                <span class="text-xs flex-1 min-w-[80px]" style="color:var(--gray)">点击从标签库选择...</span>
               </div>
-              <div id="tag-suggestions" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:20;background:var(--white);border:2px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:6px;max-height:180px;overflow-y:auto">
+              <div id="tag-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:20;background:var(--white);border:2px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:6px;max-height:180px;overflow-y:auto">
               </div>
             </div>
           </div>
@@ -254,33 +278,34 @@
           <span class="inline-block w-3 h-3" style="background:var(--purple);border:2px solid var(--border);border-radius:3px"></span>素材管理
         </h2>
         <div class="grid grid-cols-1 gap-4">
-          <div class="edit-only">
+          <div id="cover-section">
             <div class="text-xs font-semibold mb-1.5">静态封面 <span style="color:var(--coral)">*</span></div>
-            <div class="relative group overflow-hidden" style="border:2px solid var(--border);border-radius:var(--radius-sm)">
-              <img src="https://v-img.crazymaplestudios.com/images/734ea7c0-3526-11f1-acb2-c14bef828c82.jpg?x-oss-process=image%2Fresize%2Cw_1080%2Fquality%2Cq_80%2Fformat%2Cwebp" class="w-full h-40 object-cover">
-              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <div class="flex items-center gap-2">
-                  <span onclick="openImagePreview(this.closest('.group').querySelector('img').src)" class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">预览</span>
-                  <span class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">重新上传</span>
-                </div>
+            <div id="cover-upload" class="hidden">
+              <div class="upload-zone flex flex-col items-center justify-center h-40 text-center">
+                <iconify-icon icon="lucide:upload-cloud" class="text-2xl mb-1" style="color:var(--gray)"></iconify-icon>
+                <span class="text-xs font-semibold">点击上传封面</span>
+                <span class="text-xs" style="color:var(--gray)">516×765px, ≤300KB</span>
               </div>
             </div>
-            <p class="text-xs mt-1" style="color:var(--gray)">516×765px, ≤300KB</p>
+            <div id="cover-preview" class="edit-only">
+              <div class="relative group overflow-hidden" style="border:2px solid var(--border);border-radius:var(--radius-sm)">
+                <img src="https://v-img.crazymaplestudios.com/images/734ea7c0-3526-11f1-acb2-c14bef828c82.jpg?x-oss-process=image%2Fresize%2Cw_1080%2Fquality%2Cq_80%2Fformat%2Cwebp" class="w-full h-40 object-cover">
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                  <div class="flex items-center gap-2">
+                    <span onclick="openImagePreview(this.closest('.group').querySelector('img').src)" class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">预览</span>
+                    <span class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">重新上传</span>
+                  </div>
+                </div>
+              </div>
+              <p class="text-xs mt-1" style="color:var(--gray)">516×765px, ≤300KB</p>
+            </div>
           </div>
           <!-- 其他素材（选填）折叠区 -->
           <div class="mt-4 pt-4" style="border-top:2px solid var(--border)">
             <div class="flex items-center justify-between cursor-pointer" onclick="this.nextElementSibling.classList.toggle('hidden');this.querySelector('.opt-chevron').style.transform=this.nextElementSibling.classList.contains('hidden')?'':'rotate(90deg)'">
               <span class="text-xs font-semibold flex items-center gap-1.5" style="color:var(--gray)"><iconify-icon icon="lucide:chevron-right" class="text-sm opt-chevron transition-transform"></iconify-icon>其他素材（选填）</span>
             </div>
-            <div class="hidden mt-3 grid grid-cols-2 gap-4">
-              <div>
-                <div class="text-xs font-semibold mb-1.5">Logo</div>
-                <div class="upload-zone flex flex-col items-center justify-center h-20 text-center">
-                  <iconify-icon icon="lucide:upload-cloud" class="text-xl mb-1" style="color:var(--gray)"></iconify-icon>
-                  <span class="text-xs font-semibold">点击上传</span>
-                </div>
-                <p class="text-xs mt-1" style="color:var(--gray)">PNG, 200×200px</p>
-              </div>
+            <div class="hidden mt-3">
               <div>
                 <div class="text-xs font-semibold mb-1.5">花絮视频</div>
                 <div class="upload-zone flex flex-col items-center justify-center h-20 text-center">
@@ -300,6 +325,7 @@
       <h2 class="heading text-lg font-bold mb-5 flex items-center gap-2">
         <span class="inline-block w-3 h-3" style="background:var(--sky);border:2px solid var(--border);border-radius:3px"></span>多语言内容管理
         <span id="lang-count-badge" class="text-xs font-normal px-2 py-0.5 ml-2" style="background:var(--bg);border:2px solid var(--border);border-radius:var(--radius-full)">3 语种</span>
+	        <button class="text-xs font-bold cursor-pointer ml-3" style="color:var(--purple);background:none;border:none" onclick="translateAllText()"><iconify-icon icon="lucide:languages" class="text-xs"></iconify-icon> 一键翻译全部文本</button>
       </h2>
 
       <div id="multilang-container"></div>
@@ -450,14 +476,29 @@
 <script>
 const colors = ['var(--purple-light)','var(--coral-light)','var(--lemon-light)','var(--mint-light)'];
 let ci = 0;
-const SUGGESTED_TAGS = ['科幻','冒险','恋爱','悬疑','都市','古风','奇幻','校园','搞笑','热血','治愈','日常'];
+const TAG_LIBRARY = ['科幻','冒险','恋爱','悬疑','都市','古风','奇幻','校园','搞笑','热血','治愈','日常','Mafia','Romance','Suspense','复仇','甜蜜','逆袭'];
+function toggleTagDropdown() {
+  const dd = document.getElementById('tag-dropdown');
+  const visible = dd.style.display !== 'none';
+  if (visible) { dd.style.display = 'none'; return; }
+  const existing = getExistingTags();
+  const available = TAG_LIBRARY.filter(t => !existing.includes(t));
+  dd.innerHTML = '<div class="text-xs font-semibold px-2 py-1" style="color:var(--gray)">标签库</div>' + available.map(t =>
+    '<div class="flex items-center gap-2 px-2 py-1.5 text-sm font-medium cursor-pointer" style="border-radius:6px" onmouseover="this.style.background=\'var(--lemon-light)\'" onmouseout="this.style.background=\'\'" onclick="addTag(\'' + t + '\');toggleTagDropdown()">' + t + '</div>'
+  ).join('');
+  dd.style.display = 'block';
+}
+document.addEventListener('click', function(e) {
+  const w = document.getElementById('tag-wrapper');
+  if (w && !w.contains(e.target)) document.getElementById('tag-dropdown').style.display = 'none';
+});
 function addTag(v) {
   v = v.trim(); if (!v) return;
   const pills = document.querySelectorAll('.tag-pill');
   for (const p of pills) if (p.textContent.trim().replace(/×/g,'').trim() === v) return;
   const s = document.createElement('span');
   s.className = 'tag-pill'; s.style.background = colors[ci++ % colors.length];
-  s.innerHTML = v + ' <iconify-icon icon="lucide:x" class="rm text-xs" onclick="this.parentElement.remove()"></iconify-icon>';
+  s.innerHTML = v + ' <iconify-icon icon="lucide:x" class="rm text-xs" onclick="event.stopPropagation();this.parentElement.remove()"></iconify-icon>';
   document.getElementById('tag-input').before(s);
   filterTagSuggestions();
 }
@@ -469,7 +510,7 @@ function hideTagSuggestions() { setTimeout(() => { document.getElementById('tag-
 function filterTagSuggestions() {
   const q = (document.getElementById('tag-input').value || '').trim().toLowerCase();
   const existing = getExistingTags();
-  const filtered = SUGGESTED_TAGS.filter(t => !existing.includes(t) && (!q || t.toLowerCase().includes(q)));
+  const filtered = TAG_LIBRARY.filter(t => !existing.includes(t) && (!q || t.toLowerCase().includes(q)));
   const el = document.getElementById('tag-suggestions');
   if (filtered.length === 0) { el.style.display = 'none'; return; }
   el.innerHTML = '<div class="text-xs font-semibold px-2 py-1" style="color:var(--gray)">建议标签</div>' + filtered.map(t =>
@@ -620,7 +661,7 @@ function renderMultiLangSection() {
   // Other languages — compact card grid
   const others = activeLangs.filter(c => c !== 'EN');
   if (others.length > 0) {
-    html += `<div class="flex items-center justify-between mt-6 mb-2"><div class="text-xs font-semibold" style="color:var(--gray)">其他语言 (${others.length})</div><button class="text-xs font-bold cursor-pointer" style="color:var(--purple);background:none;border:none" onclick="translateAllText()"><iconify-icon icon="lucide:languages" class="text-xs"></iconify-icon> 一键翻译全部文本</button></div>`;
+    html += `<div class="flex items-center justify-between mt-6 mb-2"><div class="text-xs font-semibold" style="color:var(--gray)">其他语言 (${others.length})</div></div>`;
     html += `<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2" id="lang-card-grid">`;
     others.forEach(code => {
       const d = multiLangData[code] || {};
@@ -1001,9 +1042,15 @@ if (new URLSearchParams(location.search).get('mode') === 'create') {
     if (el.tagName==='SELECT') el.selectedIndex=0;
   });
   document.querySelectorAll('.tag-pill').forEach(el => el.remove());
-  document.querySelectorAll('.edit-only').forEach(el => el.style.display='none');
+    document.querySelectorAll('.edit-only').forEach(el => el.style.display='none');
+  // Show cover upload zone for create mode
+  document.getElementById('cover-upload').classList.remove('hidden');
   document.getElementById('series-id-display').textContent = '自动生成';
   document.getElementById('series-id-display').style.fontStyle = 'italic';
+  // Reset multilang data for create mode
+  activeLangs = [];
+  multiLangData = {};
+  renderMultiLangSection();
 }
 function openImagePreview(src) {
   var modal = document.getElementById('image-preview-modal');
@@ -1044,29 +1091,35 @@ function updateTotalEpCount() {
 }
 // ⑧ Form validation on publish
 function validateAndPublish() {
-  document.querySelectorAll('.validation-error').forEach(el => {
-    el.style.borderColor = ''; el.style.boxShadow = ''; el.classList.remove('validation-error');
-  });
-  const errors = [];
-  document.querySelectorAll('#tab-info label').forEach(label => {
-    if (label.querySelector('span[style*="coral"]')) {
-      const field = label.parentElement.querySelector('input.input-field, select.input-field, textarea.input-field');
-      if (field && !field.value.trim()) {
-        field.style.borderColor = 'var(--coral)';
-        field.style.boxShadow = '0 0 0 3px var(--coral-light)';
-        field.classList.add('validation-error');
-        errors.push(field);
-        field.addEventListener('focus', function h() { this.style.borderColor=''; this.style.boxShadow=''; this.classList.remove('validation-error'); this.removeEventListener('focus',h); });
-      }
-    }
-  });
-  if (errors.length > 0) {
-    errors[0].scrollIntoView({behavior:'smooth', block:'center'});
-    showToast('请完善必填项后再发布');
-    return;
-  }
-  location.href = 'drama-list.html?toast=drama_published';
-}
+	  document.querySelectorAll('.validation-error').forEach(el => {
+	    el.style.borderColor = ''; el.style.boxShadow = ''; el.classList.remove('validation-error');
+	  });
+	  const errors = [];
+	  document.querySelectorAll('#tab-info label').forEach(label => {
+	    if (label.querySelector('span[style*="coral"]')) {
+	      const field = label.parentElement.querySelector('input.input-field, select.input-field, textarea.input-field');
+	      if (field && !field.value.trim()) {
+	        field.style.borderColor = 'var(--coral)';
+	        field.style.boxShadow = '0 0 0 3px var(--coral-light)';
+	        field.classList.add('validation-error');
+	        errors.push(field);
+	        field.addEventListener('focus', function h() { this.style.borderColor=''; this.style.boxShadow=''; this.classList.remove('validation-error'); this.removeEventListener('focus',h); });
+	      }
+	    }
+	  });
+	  // Check EN multilingual: title, synopsis, cover
+	  const enTitle = document.getElementById('title-EN');
+	  const enSyn = document.getElementById('syn-EN');
+	  if (enTitle && !enTitle.value.trim()) { enTitle.style.borderColor='var(--coral)'; enTitle.style.boxShadow='0 0 0 3px var(--coral-light)'; errors.push(enTitle); }
+	  if (enSyn && !enSyn.value.trim()) { enSyn.style.borderColor='var(--coral)'; enSyn.style.boxShadow='0 0 0 3px var(--coral-light)'; errors.push(enSyn); }
+	  if (!(multiLangData['EN'] && multiLangData['EN'].cover)) { showToast('请上传英语封面'); return; }
+	  if (errors.length > 0) {
+	    errors[0].scrollIntoView({behavior:'smooth', block:'center'});
+	    showToast('请完善必填项后再发布');
+	    return;
+	  }
+	  location.href = 'drama-list.html?toast=drama_published';
+	}
 function showToast(msg) {
   let t = document.getElementById('validation-toast');
   if (!t) {

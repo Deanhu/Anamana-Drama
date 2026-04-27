@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>作者详情 — 漫剧资源管理后台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#FFFEF8;--white:#FFF;--lemon:#FFC233;--lemon-light:#FFF3D0;--purple:#7C5CFC;--purple-light:#EDE8FF;--mint:#34D399;--mint-light:#D1FAE5;--coral:#FF6B6B;--coral-light:#FFE4E4;--black:#1A1A1A;--gray:#6B7280;--gray-light:#F3F4F6;--border:#1A1A1A;--shadow:4px 4px 0 #1A1A1A;--radius:14px;--radius-sm:10px;--radius-full:999px}
+    body{font-family:'Inter','Noto Sans SC',sans-serif;background:var(--bg);color:var(--black)}
+    h1,.heading{font-family:'Space Grotesk','Noto Sans SC',sans-serif}
+    .box{background:var(--white);border:2px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .btn{border:2px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow);font-family:'Space Grotesk',sans-serif;font-weight:600;cursor:pointer;transition:transform .1s,box-shadow .1s;display:inline-flex;align-items:center;gap:6px}
+    .btn:active{transform:translate(4px,4px);box-shadow:none}
+    .btn-primary{background:var(--lemon)}.btn-primary:hover{background:#FFB800}
+    .btn-secondary{background:var(--white)}.btn-secondary:hover{background:var(--gray-light)}
+    .input-field{border:2px solid var(--border);border-radius:var(--radius-sm);background:var(--white);outline:none;transition:box-shadow .15s}
+    .input-field:focus{box-shadow:var(--shadow)}
+    .upload-zone{border:2px dashed var(--border);border-radius:var(--radius-sm);transition:all .15s;cursor:pointer}
+    .upload-zone:hover{background:var(--lemon-light);border-style:solid;border-color:var(--lemon)}
+    .toast{position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-20px);opacity:0;z-index:200;display:flex;align-items:center;gap:10px;padding:14px 24px;font-weight:600;font-size:14px;border:2px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);pointer-events:none;transition:opacity .3s,transform .3s}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+    .toast-success{background:var(--mint-light)}
+    .modal-overlay{position:fixed;inset:0;background:rgba(26,26,26,0.5);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
+    .modal-overlay.active{opacity:1;pointer-events:auto}
+  </style>
+</head>
+<body class="min-h-screen">
+
+<div id="toast" class="toast toast-success">
+  <iconify-icon icon="lucide:check-circle-2" style="color:var(--mint)" class="text-xl"></iconify-icon>
+  <span id="toast-msg">操作成功</span>
+</div>
+
+<header style="background:var(--white);border-bottom:2px solid var(--border)" class="px-8 py-4 flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    <div class="w-10 h-10 flex items-center justify-center" style="background:var(--lemon);border:2px solid var(--border);border-radius:var(--radius-sm)">
+      <iconify-icon icon="lucide:clapperboard" class="text-xl"></iconify-icon>
+    </div>
+    <span class="heading text-lg font-bold">漫剧管理后台</span>
+    <nav class="flex items-center gap-1 ml-6">
+      <a href="drama-list.html" class="text-sm font-semibold px-3 py-1 rounded-lg" style="text-decoration:none;color:var(--gray)">漫剧</a>
+      <a href="tag-list.html" class="text-sm font-semibold px-3 py-1 rounded-lg" style="text-decoration:none;color:var(--gray)">标签</a>
+      <a href="author-list.html" class="text-sm font-semibold px-3 py-1 rounded-lg" style="background:var(--lemon-light);text-decoration:none;color:var(--black)">作者</a>
+    </nav>
+  </div>
+  <div class="flex items-center gap-3">
+    <span class="text-sm font-medium" style="color:var(--gray)">Dean</span>
+    <div class="w-9 h-9 flex items-center justify-center font-bold text-sm text-white" style="background:var(--purple);border:2px solid var(--border);border-radius:var(--radius-full)">D</div>
+  </div>
+</header>
+
+<main class="max-w-[800px] mx-auto px-8 py-8">
+  <a href="author-list.html" class="inline-flex items-center gap-1.5 text-sm font-semibold mb-4 hover:underline" style="text-decoration:none;color:var(--gray)">
+    <iconify-icon icon="lucide:arrow-left"></iconify-icon>返回作者列表
+  </a>
+  <h1 id="page-title" class="text-3xl font-bold tracking-tight heading mb-8">新建作者</h1>
+
+  <div class="box p-6">
+    <div class="flex flex-col gap-5">
+      <div>
+        <label class="block text-sm font-semibold mb-1.5">名称 <span style="color:var(--coral)">*</span></label>
+        <input type="text" id="author-name" class="input-field w-full px-4 py-2.5 text-sm" placeholder="输入作者名称">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-1.5">类型 <span style="color:var(--coral)">*</span></label>
+        <div class="flex items-center gap-4 mt-1">
+          <label class="flex items-center gap-2 cursor-pointer text-sm font-medium">
+            <input type="radio" name="type" value="内部作者" class="accent-[var(--purple)]"> <iconify-icon icon="lucide:user" class="text-base"></iconify-icon> 内部作者
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer text-sm font-medium">
+            <input type="radio" name="type" value="外部作者" class="accent-[var(--purple)]"> <iconify-icon icon="lucide:users" class="text-base"></iconify-icon> 外部作者
+          </label>
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-1.5">Title <span style="color:var(--coral)">*</span></label>
+        <input type="text" id="author-title" class="input-field w-full px-4 py-2.5 text-sm" placeholder="输入作者 Title">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-1.5">Brief</label>
+        <textarea id="author-brief" rows="3" class="input-field w-full px-4 py-2.5 text-sm resize-none" maxlength="500" oninput="updateCount()" placeholder="输入作者简介..."></textarea>
+        <div class="text-right mt-1"><span id="brief-count" class="text-xs" style="color:var(--gray)">0/500</span></div>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-1.5">头像 <span style="color:var(--coral)">*</span></label>
+        <div id="avatar-area">
+          <div class="upload-zone flex flex-col items-center justify-center text-center" style="width:200px;height:200px" onclick="document.getElementById('avatar-input').click()">
+            <iconify-icon icon="lucide:upload-cloud" class="text-3xl mb-2" style="color:var(--gray)"></iconify-icon>
+            <span class="text-sm font-semibold">点击上传头像</span>
+            <span class="text-xs mt-1" style="color:var(--gray)">JPG/PNG</span>
+          </div>
+          <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="previewAvatar(this)">
+        </div>
+        <div id="avatar-preview" style="display:none">
+          <div class="relative group" style="width:200px;height:200px;overflow:hidden;border:2px solid var(--border);border-radius:var(--radius-sm)">
+            <img id="avatar-img" src="" style="width:100%;height:100%;object-fit:cover">
+            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+              <div class="flex items-center gap-2">
+                <span onclick="openImagePreview()" class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">预览</span>
+                <span onclick="document.getElementById('avatar-input').click()" class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">重新上传</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-end gap-3 mt-6">
+    <button class="btn btn-secondary px-5 py-2.5 text-sm" onclick="location.href='author-list.html'">取消</button>
+    <button class="btn btn-primary px-5 py-2.5 text-sm" onclick="saveAuthor()">保存</button>
+  </div>
+</main>
+
+<!-- Image Preview Modal -->
+<div id="image-modal" class="modal-overlay" onclick="if(event.target===this)closeImagePreview()">
+  <div style="position:relative;max-width:90vw;max-height:90vh">
+    <button onclick="closeImagePreview()" class="w-8 h-8 flex items-center justify-center" style="position:absolute;top:-12px;right:-12px;border:2px solid var(--border);border-radius:var(--radius-sm);background:var(--white);z-index:1;cursor:pointer">
+      <iconify-icon icon="lucide:x" class="text-base"></iconify-icon>
+    </button>
+    <img id="image-preview-img" src="" style="max-width:90vw;max-height:85vh;object-fit:contain;border:2px solid var(--border);border-radius:var(--radius-sm);background:var(--white)">
+  </div>
+</div>
+
+<script>
+let avatarUploaded = false;
+
+function updateCount() {
+  const ta = document.getElementById('author-brief');
+  const el = document.getElementById('brief-count');
+  const len = ta.value.length;
+  el.textContent = len + '/500';
+  el.style.color = len > 450 ? 'var(--coral)' : 'var(--gray)';
+}
+
+function previewAvatar(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('avatar-img').src = e.target.result;
+      document.getElementById('avatar-area').style.display = 'none';
+      document.getElementById('avatar-preview').style.display = '';
+      avatarUploaded = true;
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function openImagePreview() {
+  document.getElementById('image-preview-img').src = document.getElementById('avatar-img').src;
+  document.getElementById('image-modal').classList.add('active');
+}
+function closeImagePreview() { document.getElementById('image-modal').classList.remove('active'); }
+
+function saveAuthor() {
+  // Clear errors
+  document.querySelectorAll('.input-field').forEach(f => { f.style.borderColor = ''; f.style.boxShadow = ''; });
+  const errors = [];
+
+  const name = document.getElementById('author-name');
+  if (!name.value.trim()) { name.style.borderColor='var(--coral)'; name.style.boxShadow='0 0 0 3px var(--coral-light)'; errors.push(name); }
+
+  const title = document.getElementById('author-title');
+  if (!title.value.trim()) { title.style.borderColor='var(--coral)'; title.style.boxShadow='0 0 0 3px var(--coral-light)'; errors.push(title); }
+
+  const type = document.querySelector('input[name="type"]:checked');
+  if (!type) { showToast('请选择作者类型'); return; }
+
+  if (!avatarUploaded) { showToast('请上传头像'); return; }
+
+  if (errors.length > 0) { errors[0].scrollIntoView({behavior:'smooth',block:'center'}); showToast('请完善必填项'); return; }
+
+  location.href = 'author-list.html?toast=author_saved';
+}
+
+function showToast(msg) {
+  document.getElementById('toast-msg').textContent = msg;
+  document.getElementById('toast').classList.add('show');
+  setTimeout(() => document.getElementById('toast').classList.remove('show'), 3000);
+}
+
+// Edit mode
+if (!new URLSearchParams(location.search).get('mode')) {
+  document.getElementById('page-title').textContent = '编辑作者: Sarah Mitchell';
+  document.getElementById('author-name').value = 'Sarah Mitchell';
+  document.querySelector('input[name="type"][value="内部作者"]').checked = true;
+  document.getElementById('author-title').value = 'Lead Writer';
+  document.getElementById('author-brief').value = 'Award-winning writer specializing in romance and suspense dramas. Over 10 years of experience in serialized fiction.';
+  updateCount();
+  // Simulate uploaded avatar
+  document.getElementById('avatar-img').src = 'https://picsum.photos/seed/sarah/200/200';
+  document.getElementById('avatar-area').style.display = 'none';
+  document.getElementById('avatar-preview').style.display = '';
+  avatarUploaded = true;
+}
+
+// Focus clear errors
+document.querySelectorAll('.input-field').forEach(f => {
+  f.addEventListener('focus', function() { this.style.borderColor=''; this.style.boxShadow=''; });
+});
+</script>
+</body>
+</html>

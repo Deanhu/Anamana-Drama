@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>作者管理 — 漫剧资源管理后台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#FFFEF8;--white:#FFF;--lemon:#FFC233;--lemon-light:#FFF3D0;--purple:#7C5CFC;--purple-light:#EDE8FF;--mint:#34D399;--mint-light:#D1FAE5;--coral:#FF6B6B;--coral-light:#FFE4E4;--black:#1A1A1A;--gray:#6B7280;--gray-light:#F3F4F6;--border:#1A1A1A;--shadow:4px 4px 0 #1A1A1A;--radius:14px;--radius-sm:10px;--radius-full:999px}
+    body{font-family:'Inter','Noto Sans SC',sans-serif;background:var(--bg);color:var(--black)}
+    h1,.heading{font-family:'Space Grotesk','Noto Sans SC',sans-serif}
+    .btn{border:2px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow);font-family:'Space Grotesk',sans-serif;font-weight:600;cursor:pointer;transition:transform .1s,box-shadow .1s;display:inline-flex;align-items:center;gap:6px}
+    .btn:active{transform:translate(4px,4px);box-shadow:none}
+    .btn-primary{background:var(--lemon)}.btn-primary:hover{background:#FFB800}
+    .btn-secondary{background:var(--white)}.btn-secondary:hover{background:var(--gray-light)}
+    .input-field{border:2px solid var(--border);border-radius:var(--radius-sm);background:var(--white);outline:none;transition:box-shadow .15s}
+    .input-field:focus{box-shadow:var(--shadow)}
+    .box{background:var(--white);border:2px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .tbl{width:100%;border-collapse:collapse}
+    .tbl th{text-align:left;padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid var(--border);background:var(--gray-light)}
+    .tbl td{padding:12px 16px;border-bottom:2px solid var(--border);font-size:14px;vertical-align:middle}
+    .tbl tr:last-child td{border-bottom:none}
+    .tbl tr:hover td{background:var(--lemon-light)}
+    .type-badge{border:2px solid var(--border);border-radius:var(--radius-full);font-weight:700;font-size:11px;padding:2px 10px;display:inline-block}
+    .toast{position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-20px);opacity:0;z-index:200;display:flex;align-items:center;gap:10px;padding:14px 24px;font-weight:600;font-size:14px;border:2px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);pointer-events:none;transition:opacity .3s,transform .3s}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+    .toast-success{background:var(--mint-light)}
+    .modal-overlay{position:fixed;inset:0;background:rgba(26,26,26,0.5);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
+    .modal-overlay.active{opacity:1;pointer-events:auto}
+    .modal-box{background:var(--white);border:2px solid var(--border);border-radius:var(--radius);box-shadow:8px 8px 0px #1A1A1A;max-width:420px;width:92%}
+  </style>
+</head>
+<body class="min-h-screen">
+
+<div id="toast" class="toast toast-success">
+  <iconify-icon icon="lucide:check-circle-2" style="color:var(--mint)" class="text-xl"></iconify-icon>
+  <span id="toast-msg">操作成功</span>
+  <button onclick="hideToast()" style="cursor:pointer;margin-left:8px;background:none;border:none;font-size:18px;line-height:1;color:var(--gray)">×</button>
+</div>
+
+<header style="background:var(--white);border-bottom:2px solid var(--border)" class="px-8 py-4 flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    <div class="w-10 h-10 flex items-center justify-center" style="background:var(--lemon);border:2px solid var(--border);border-radius:var(--radius-sm)">
+      <iconify-icon icon="lucide:clapperboard" class="text-xl"></iconify-icon>
+    </div>
+    <span class="heading text-lg font-bold">漫剧管理后台</span>
+    <nav class="flex items-center gap-1 ml-6">
+      <a href="drama-list.html" class="text-sm font-semibold px-3 py-1 rounded-lg" style="text-decoration:none;color:var(--gray)">漫剧</a>
+      <a href="tag-list.html" class="text-sm font-semibold px-3 py-1 rounded-lg" style="text-decoration:none;color:var(--gray)">标签</a>
+      <a href="author-list.html" class="text-sm font-semibold px-3 py-1 rounded-lg" style="background:var(--lemon-light);text-decoration:none;color:var(--black)">作者</a>
+    </nav>
+  </div>
+  <div class="flex items-center gap-3">
+    <span class="text-sm font-medium" style="color:var(--gray)">Dean</span>
+    <div class="w-9 h-9 flex items-center justify-center font-bold text-sm text-white" style="background:var(--purple);border:2px solid var(--border);border-radius:var(--radius-full)">D</div>
+  </div>
+</header>
+
+<main class="max-w-[1200px] mx-auto px-8 py-8">
+  <div class="flex items-end justify-between mb-6">
+    <div>
+      <h1 class="text-3xl font-bold tracking-tight mb-1">作者管理</h1>
+      <p class="text-sm" style="color:var(--gray)">共 <span class="font-bold" style="color:var(--black)" id="total-count">8</span> 位作者</p>
+    </div>
+    <a href="author-detail.html?mode=create" class="btn btn-primary px-5 py-2.5 text-sm" style="text-decoration:none;color:var(--black)">
+      <iconify-icon icon="lucide:plus" class="text-base"></iconify-icon>新建作者
+    </a>
+  </div>
+
+  <div class="flex items-center gap-4 mb-6">
+    <div class="input-field flex items-center gap-2 px-4 py-2 flex-1 max-w-[300px]">
+      <iconify-icon icon="lucide:search" style="color:var(--gray)"></iconify-icon>
+      <input type="text" id="search" placeholder="搜索作者名..." class="bg-transparent outline-none text-sm flex-1" oninput="render()">
+    </div>
+  </div>
+
+  <div class="box overflow-hidden">
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th style="width:60px">头像</th>
+          <th>名称</th>
+          <th>类型</th>
+          <th>Title</th>
+          <th style="width:120px;text-align:center">操作</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</main>
+
+<div id="confirm-modal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="flex items-center justify-between p-5" style="border-bottom:2px solid var(--border)">
+      <h3 class="heading font-bold text-lg flex items-center gap-2">
+        <iconify-icon icon="lucide:alert-triangle" class="text-xl" style="color:var(--coral)"></iconify-icon>
+        <span id="modal-title">删除确认</span>
+      </h3>
+      <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center cursor-pointer" style="border:2px solid var(--border);border-radius:var(--radius-sm);background:var(--white)"><iconify-icon icon="lucide:x" class="text-sm"></iconify-icon></button>
+    </div>
+    <div class="p-5">
+      <p id="modal-msg" class="text-sm mb-5"></p>
+      <div class="flex justify-end gap-3">
+        <button onclick="closeModal()" class="btn btn-secondary px-5 py-2 text-sm">取消</button>
+        <button id="modal-ok" class="btn px-5 py-2 text-sm" style="background:var(--coral);color:#fff">确认删除</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const authors = [
+  {id:1,name:'Sarah Mitchell',type:'内部作者',title:'Lead Writer',avatar:'https://picsum.photos/seed/sarah/100/100'},
+  {id:2,name:'James Cooper',type:'外部作者',title:'Freelance Writer',avatar:'https://picsum.photos/seed/james/100/100'},
+  {id:3,name:'Emily Zhao',type:'内部作者',title:'Senior Writer',avatar:'https://picsum.photos/seed/emily/100/100'},
+  {id:4,name:'David Kim',type:'外部作者',title:'Content Creator',avatar:'https://picsum.photos/seed/david/100/100'},
+  {id:5,name:'Rachel Chen',type:'内部作者',title:'Creative Director',avatar:'https://picsum.photos/seed/rachel/100/100'},
+  {id:6,name:'Marcus Webb',type:'外部作者',title:'Screenwriter',avatar:'https://picsum.photos/seed/marcus/100/100'},
+  {id:7,name:'Olivia Santos',type:'内部作者',title:'Story Editor',avatar:'https://picsum.photos/seed/olivia/100/100'},
+  {id:8,name:'Lucas Grant',type:'外部作者',title:'Novelist',avatar:'https://picsum.photos/seed/lucas/100/100'},
+];
+
+function render() {
+  const q = (document.getElementById('search').value || '').toLowerCase();
+  const filtered = authors.filter(a => !q || a.name.toLowerCase().includes(q));
+  document.getElementById('total-count').textContent = filtered.length;
+  document.getElementById('tbody').innerHTML = filtered.map(a => `
+    <tr>
+      <td>
+        <img src="${a.avatar}" alt="${a.name}" style="width:40px;height:40px;object-fit:cover;border:2px solid var(--border);border-radius:var(--radius-full)" onerror="this.src='https://picsum.photos/seed/${a.name.split(' ')[0].toLowerCase()}/100/100'">
+      </td>
+      <td><span class="font-bold">${a.name}</span></td>
+      <td><span class="type-badge" style="background:${a.type==='内部作者'?'var(--mint-light)':'var(--purple-light)'}">${a.type}</span></td>
+      <td style="color:var(--gray)">${a.title}</td>
+      <td class="text-center">
+        <a href="author-detail.html?id=${a.id}" class="text-xs font-bold" style="color:var(--purple);text-decoration:none">编辑</a>
+        <span style="color:var(--gray);margin:0 6px">|</span>
+        <span class="text-xs font-bold cursor-pointer" style="color:var(--coral)" onclick="deleteAuthor(${a.id},'${a.name}')">删除</span>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function deleteAuthor(id, name) {
+  document.getElementById('modal-title').textContent = '删除作者';
+  document.getElementById('modal-msg').textContent = `确定要删除作者「${name}」吗？删除后不可恢复。`;
+  document.getElementById('modal-ok').onclick = () => {
+    const idx = authors.findIndex(a => a.id === id);
+    if (idx >= 0) authors.splice(idx, 1);
+    closeModal();
+    render();
+    showToast('作者已删除');
+  };
+  document.getElementById('confirm-modal').classList.add('active');
+}
+function closeModal() { document.getElementById('confirm-modal').classList.remove('active'); }
+
+function showToast(msg) {
+  document.getElementById('toast-msg').textContent = msg;
+  document.getElementById('toast').classList.add('show');
+  setTimeout(() => document.getElementById('toast').classList.remove('show'), 3000);
+}
+function hideToast() { document.getElementById('toast').classList.remove('show'); }
+
+const params = new URLSearchParams(location.search);
+if (params.get('toast') === 'author_saved') { showToast('作者已保存'); try{history.replaceState(null,'',location.pathname)}catch(e){} }
+
+render();
+</script>
+</body>
+</html>

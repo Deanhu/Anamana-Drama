@@ -58,6 +58,11 @@
       <iconify-icon icon="lucide:clapperboard" class="text-xl"></iconify-icon>
     </div>
     <span class="heading text-lg font-bold">漫剧管理后台</span>
+    <nav class="flex items-center gap-1 ml-6">
+      <a href="drama-list.html" class="text-sm font-semibold px-3 py-1 rounded-lg" style="background:var(--lemon-light);text-decoration:none;color:var(--black)">漫剧</a>
+      <a href="tag-list.html" class="text-sm font-semibold px-3 py-1 rounded-lg" style="text-decoration:none;color:var(--gray)">标签</a>
+      <a href="author-list.html" class="text-sm font-semibold px-3 py-1 rounded-lg" style="text-decoration:none;color:var(--gray)">作者</a>
+    </nav>
   </div>
   <div class="flex items-center gap-3">
     <span class="text-sm font-medium" style="color:var(--gray)">Dean</span>
@@ -80,7 +85,7 @@
     <div class="flex items-center gap-2">
       <button class="filter-pill px-4 py-1.5 active" data-filter="all" onclick="applyFilter(this)">全部</button>
       <button class="filter-pill px-4 py-1.5" data-filter="草稿" onclick="applyFilter(this)">草稿</button>
-      <button class="filter-pill px-4 py-1.5" data-filter="已上线" onclick="applyFilter(this)">已上线</button>
+      <button class="filter-pill px-4 py-1.5" data-filter="已发布" onclick="applyFilter(this)">已发布</button>
       <button class="filter-pill px-4 py-1.5" data-filter="已下线" onclick="applyFilter(this)">已下线</button>
       <span style="color:var(--gray);margin:0 4px">|</span>
       <!-- Language filter: click to toggle -->
@@ -90,13 +95,23 @@
           <span id="lang-filter-label">全部语言</span>
           <iconify-icon icon="lucide:chevron-down" class="text-xs"></iconify-icon>
         </button>
-        <div id="lang-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:20;min-width:170px;background:var(--white);border:2px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:4px">
+        <div id="lang-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:20;min-width:200px;max-height:320px;overflow-y:auto;background:var(--white);border:2px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:4px">
           <button onclick="applyLang('all')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer" style="background:var(--lemon-light)">全部语言 <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-all">60</span></button>
-          <button onclick="applyLang('EN')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">English <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-EN">0</span></button>
-          <button onclick="applyLang('ZH')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">中文 <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-ZH">0</span></button>
-          <button onclick="applyLang('JP')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">日本語 <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-JP">0</span></button>
-          <button onclick="applyLang('KR')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">한국어 <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-KR">0</span></button>
-          <button onclick="applyLang('ES')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">Español <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-ES">0</span></button>
+          <button onclick="applyLang('EN')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">EN · English <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-EN">0</span></button>
+          <button onclick="applyLang('ZH')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">ZH · 中文 <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-ZH">0</span></button>
+          <button onclick="applyLang('JA')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">JA · 日本語 <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-JA">0</span></button>
+          <button onclick="applyLang('KO')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">KO · 한국어 <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-KO">0</span></button>
+          <button onclick="applyLang('ES')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">ES · Español <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-ES">0</span></button>
+          <button onclick="applyLang('FR')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">FR · Français <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-FR">0</span></button>
+          <button onclick="applyLang('TH')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">TH · ไทย <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-TH">0</span></button>
+          <button onclick="applyLang('PT')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">PT · Português <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-PT">0</span></button>
+          <button onclick="applyLang('DE')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">DE · Deutsch <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-DE">0</span></button>
+          <button onclick="applyLang('AR')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">AR · العربية <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-AR">0</span></button>
+          <button onclick="applyLang('HI')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">HI · हिन्दी <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-HI">0</span></button>
+          <button onclick="applyLang('ID')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">ID · Bahasa Indonesia <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-ID">0</span></button>
+          <button onclick="applyLang('VI')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">VI · Tiếng Việt <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-VI">0</span></button>
+          <button onclick="applyLang('TR')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">TR · Türkçe <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-TR">0</span></button>
+          <button onclick="applyLang('RU')" class="lang-opt w-full text-left px-3 py-2 text-sm font-semibold rounded-lg flex items-center justify-between cursor-pointer">RU · Русский <span class="text-xs font-bold" style="color:var(--gray)" id="lang-count-RU">0</span></button>
         </div>
       </div>
     </div>
@@ -124,8 +139,8 @@
 const PER_PAGE = 20;
 let currentPage = 1, currentFilter = 'all', currentSort = 'updated', currentSearch = '', currentLang = 'all';
 
-const statuses = ['已上线','草稿','已下线'];
-const statusColors = {'已上线':'var(--mint-light)','草稿':'var(--gray-light)','已下线':'var(--coral-light)'};
+const statuses = ['已发布','草稿','已下线'];
+const statusColors = {'已发布':'var(--mint-light)','草稿':'var(--gray-light)','已下线':'var(--coral-light)'};
 const authors = ['Sarah Mitchell','James Cooper','Emily Zhao','David Kim','Rachel Chen','Marcus Webb','Olivia Santos','Lucas Grant','Mia Thompson','Nathan Rivera','Ava Patel','Ethan Brooks','Sophia Lee','Daniel Cruz','Isabella Wang','Jack Morrison','Chloe Anderson','Ryan Foster'];
 const titles = [
   'Married The Mafioso I Saved','Lucifer\'s Bride','She\'s Not Homeless She\'s Healer Goddess','CEO\'s Twins Want Mommy Back','The Heiress Blacklisted Her Husband','Obsessed with His Silent Bride',
@@ -140,11 +155,11 @@ const titles = [
   'The Mafia King\'s Fated Luna','The Billionaire\'s Forgotten Wife','The Alpha\'s Possession','The Don\'s Forced Bride','The CEO\'s Virgin Wife','The Alpha\'s Price'
 ];
 
-const langs = ['EN','EN','EN','EN','EN','ES','EN','EN','KR','ES','EN','EN','EN','EN','ES','JP','EN','EN'];
-const langNames = {all:'全部语言',EN:'English',ZH:'中文',JP:'日本語',KR:'한국어',ES:'Español'};
+const langs = ['EN','EN','EN','EN','EN','ES','EN','EN','KO','ES','EN','EN','EN','EN','ES','JA','EN','EN'];
+const langNames = {all:'全部语言',EN:'English',ZH:'中文',JA:'日本語',KO:'한국어',ES:'Español',FR:'Français',TH:'ไทย',PT:'Português',DE:'Deutsch',AR:'العربية',HI:'हिन्दी',ID:'Bahasa Indonesia',VI:'Tiếng Việt',TR:'Türkçe',RU:'Русский'};
 const orientations = ['竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏'];
 const owners = ['Alex Morgan','Rachel Chen','Alex Morgan','Jake Wilson','Rachel Chen','Alex Morgan','Jake Wilson','Alex Morgan','Rachel Chen','Jake Wilson','Alex Morgan','Rachel Chen','Jake Wilson','Alex Morgan','Rachel Chen','Jake Wilson','Alex Morgan','Rachel Chen'];
-const sources = ['Original','Licensed','Original','Licensed','Original','Licensed','Original','Licensed','Original','Licensed','Original','Licensed','Original','Licensed','Original','Licensed','Original','Licensed'];
+const sources = ['全包采买剧','内部剧','全包采买剧','外部合作剧','内部剧','全包采买剧','外部合作剧','内部剧','全包采买剧','外部合作剧','内部剧','全包采买剧','外部合作剧','内部剧','全包采买剧','外部合作剧','内部剧','全包采买剧'];
 const covers = [
   'https://v-img.crazymaplestudios.com/images/734ea7c0-3526-11f1-acb2-c14bef828c82.jpg?x-oss-process=image%2Fresize%2Cw_1080%2Fquality%2Cq_80%2Fformat%2Cwebp',
   'https://v-img.crazymaplestudios.com/images/03b7de70-37c6-11f1-acb2-c14bef828c82.jpg?x-oss-process=image%2Fresize%2Cw_1080%2Fquality%2Cq_80%2Fformat%2Cwebp',
@@ -217,7 +232,7 @@ for (let i = 0; i < 60; i++) {
     orientation: orientations[i % orientations.length],
     owner: owners[i % owners.length],
     source: sources[i % sources.length],
-    supportedLangs: [langs[i % langs.length], ...(['EN','ZH','JP','KR','ES'].filter(l => l !== langs[i % langs.length]).slice(0, Math.floor(Math.random()*3)))],
+    supportedLangs: [langs[i % langs.length], ...(['EN','ZH','JA','KO','ES'].filter(l => l !== langs[i % langs.length]).slice(0, Math.floor(Math.random()*3)))],
     videoUploaded: videoUp,
     subtitleUploaded: subtitleUp,
     subtitleTotal: subtitleTotal,
@@ -226,7 +241,7 @@ for (let i = 0; i < 60; i++) {
     langComplete: langComplete
   });
 }
-allDramas.forEach(d => { if (d.status === '已上线') d.episodes = Math.max(d.episodes, 12); });
+allDramas.forEach(d => { if (d.status === '已发布') d.episodes = Math.max(d.episodes, 12); });
 
 function getFiltered() {
   let list = [...allDramas];
@@ -281,7 +296,7 @@ function render() {
         <div class="heading" style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.title}</div>
         <div style="font-size:11px;color:#aaa;margin-top:2px">#${d.seriesId}</div>
         <div style="font-size:12px;color:var(--gray);margin-top:3px">${d.author} · 归属: ${d.owner}</div>
-        <div style="font-size:12px;color:var(--gray);margin-top:2px">${d.episodes}集 · 来源: ${d.source === 'Original' ? '<span style="color:var(--mint)">原创</span>' : '<span style="color:#8B5CF6">采买</span>'} · 更新 ${d.updated}</div>
+        <div style="font-size:12px;color:var(--gray);margin-top:2px">${d.episodes}集 · 来源: <span style="color:${d.source==='全包采买剧'?'var(--mint)':d.source==='内部剧'?'#8B5CF6':'var(--purple)'}">${d.source}</span> · 更新 ${d.updated}</div>
         ${(()=>{
             const vPct = d.episodes > 0 ? Math.round(d.videoUploaded / d.episodes * 100) : 0;
             const sPct = d.subtitleTotal > 0 ? Math.round(d.subtitleUploaded / d.subtitleTotal * 100) : 0;
@@ -316,7 +331,7 @@ function render() {
   pag.innerHTML = html;
 
   // Update lang counts
-  const langCounts = {all: allDramas.length, EN:0, ZH:0, JP:0, KR:0, ES:0};
+  const langCounts = {all: allDramas.length, EN:0, ZH:0, JA:0, KO:0, ES:0, FR:0, TH:0, PT:0, DE:0, AR:0, HI:0, ID:0, VI:0, TR:0, RU:0};
   allDramas.forEach(d => { if (langCounts[d.lang] !== undefined) langCounts[d.lang]++; });
   Object.keys(langCounts).forEach(k => {
     const el = document.getElementById('lang-count-' + k);
@@ -341,8 +356,11 @@ function applyFilter(btn) {
 function applySearch() {
   currentSearch = document.getElementById('search').value;
   currentPage = 1;
-  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
-  if (!currentSearch) document.querySelector('[data-filter="all"]').classList.add('active');
+  if (!currentSearch) {
+    currentFilter = 'all';
+    document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-filter="all"]').classList.add('active');
+  }
   render();
 }
 function applySort(btn) {
