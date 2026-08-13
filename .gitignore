@@ -1,0 +1,14 @@
+# 依赖
+node_modules/
+
+# 测试产物（每次运行重新生成，不进 git）
+qa/vidstore-acceptance/screenshots/
+qa/vidstore-acceptance/reports/
+
+# 系统文件
+.DS_Store
+
+# 临时与编辑器
+*.tmp
+.vscode/
+.idea/

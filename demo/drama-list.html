@@ -42,6 +42,13 @@
     .toast-success{background:var(--mint-light)}
     .completion-chip{font-size:10px;font-weight:700;padding:1px 6px;border:1.5px solid var(--border);border-radius:var(--radius-full);white-space:nowrap;cursor:default}
     .completion-wrap:hover .completion-tooltip{display:block!important}
+    .card-body{padding:10px 12px 12px}
+    .title-block{display:flex;flex-direction:column;gap:2px}
+    .author-line{font-size:12px;color:var(--gray);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .meta-stack{display:flex;flex-direction:column;gap:3px;margin-top:7px;padding-top:7px;border-top:1.5px solid var(--gray-light)}
+    .meta-line{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--gray);white-space:nowrap;overflow:hidden}
+    .meta-badge{display:inline-flex;align-items:center;height:18px;padding:0 7px;border:1.5px solid var(--border);border-radius:var(--radius-full);font-size:10px;font-weight:800;line-height:1;white-space:nowrap}
+    .meta-date{font-size:11px;color:var(--gray);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   </style>
 </head>
 <body class="min-h-screen">
@@ -74,7 +81,7 @@
   <div class="flex items-end justify-between mb-6">
     <div>
       <h1 class="text-3xl font-bold tracking-tight mb-1">漫剧列表</h1>
-      <p class="text-sm" style="color:var(--gray)">共 <span class="font-bold" style="color:var(--black)" id="total-count">60</span> 部漫剧 · 第 <span id="page-num">1</span>/3 页</p>
+      <p class="text-sm" style="color:var(--gray)">共 <span class="font-bold" style="color:var(--black)" id="total-count">60</span> 部漫剧 · 第 <span id="page-num">1</span>/<span id="total-pages">3</span> 页</p>
     </div>
     <a href="drama-detail.html?mode=create" class="btn btn-primary px-5 py-2.5 text-sm" style="text-decoration:none;color:var(--black)">
       <iconify-icon icon="lucide:plus" class="text-base"></iconify-icon>创建新剧
@@ -137,10 +144,10 @@
 
 <script>
 const PER_PAGE = 20;
-let currentPage = 1, currentFilter = 'all', currentSort = 'updated', currentSearch = '', currentLang = 'all';
+let currentPage = 1, currentFilter = 'all', currentSort = 'updated', currentSortDir = 'desc', currentSearch = '', currentLang = 'all';
 
 const statuses = ['已发布','草稿','已下线'];
-const statusColors = {'已发布':'var(--mint-light)','草稿':'var(--gray-light)','已下线':'var(--coral-light)'};
+const statusColors = {'已发布':'var(--mint)','草稿':'var(--gray-light)','已下线':'var(--coral)'};
 const authors = ['Sarah Mitchell','James Cooper','Emily Zhao','David Kim','Rachel Chen','Marcus Webb','Olivia Santos','Lucas Grant','Mia Thompson','Nathan Rivera','Ava Patel','Ethan Brooks','Sophia Lee','Daniel Cruz','Isabella Wang','Jack Morrison','Chloe Anderson','Ryan Foster'];
 const titles = [
   'Married The Mafioso I Saved','Lucifer\'s Bride','She\'s Not Homeless She\'s Healer Goddess','CEO\'s Twins Want Mommy Back','The Heiress Blacklisted Her Husband','Obsessed with His Silent Bride',
@@ -158,8 +165,20 @@ const titles = [
 const langs = ['EN','EN','EN','EN','EN','ES','EN','EN','KO','ES','EN','EN','EN','EN','ES','JA','EN','EN'];
 const langNames = {all:'全部语言',EN:'English',ZH:'中文',JA:'日本語',KO:'한국어',ES:'Español',FR:'Français',TH:'ไทย',PT:'Português',DE:'Deutsch',AR:'العربية',HI:'हिन्दी',ID:'Bahasa Indonesia',VI:'Tiếng Việt',TR:'Türkçe',RU:'Русский'};
 const orientations = ['竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏','竖屏'];
-const owners = ['Alex Morgan','Rachel Chen','Alex Morgan','Jake Wilson','Rachel Chen','Alex Morgan','Jake Wilson','Alex Morgan','Rachel Chen','Jake Wilson','Alex Morgan','Rachel Chen','Jake Wilson','Alex Morgan','Rachel Chen','Jake Wilson','Alex Morgan','Rachel Chen'];
 const sources = ['全包采买剧','内部剧','全包采买剧','外部合作剧','内部剧','全包采买剧','外部合作剧','内部剧','全包采买剧','外部合作剧','内部剧','全包采买剧','外部合作剧','内部剧','全包采买剧','外部合作剧','内部剧','全包采买剧'];
+const productionModes = ['剧转剧','文生剧','漫转剧','成品剧','漫转剧','剧转剧','文生剧','成品剧','漫转剧','剧转剧','文生剧','成品剧','漫转剧','剧转剧','文生剧','成品剧','漫转剧','剧转剧'];
+const sourceStyles = {
+  '全包采买剧': 'background:var(--mint-light);border-color:var(--mint);color:#047857',
+  '内部剧': 'background:var(--purple-light);border-color:var(--purple);color:var(--purple)',
+  '外部合作剧': 'background:var(--purple);border-color:var(--purple);color:#fff'
+};
+const sourceLabels = {'全包采买剧':'全包采买','内部剧':'内部','外部合作剧':'外部合作'};
+const productionModeStyles = {
+  '剧转剧': 'background:var(--gray-light);border-color:var(--border);color:var(--black)',
+  '文生剧': 'background:var(--lemon-light);border-color:var(--lemon);color:#92400e',
+  '漫转剧': 'background:#E0F2FE;border-color:#38BDF8;color:#0369A1',
+  '成品剧': 'background:var(--white);border-color:var(--gray);color:var(--gray)'
+};
 const covers = [
   'https://v-img.crazymaplestudios.com/images/734ea7c0-3526-11f1-acb2-c14bef828c82.jpg?x-oss-process=image%2Fresize%2Cw_1080%2Fquality%2Cq_80%2Fformat%2Cwebp',
   'https://v-img.crazymaplestudios.com/images/03b7de70-37c6-11f1-acb2-c14bef828c82.jpg?x-oss-process=image%2Fresize%2Cw_1080%2Fquality%2Cq_80%2Fformat%2Cwebp',
@@ -205,7 +224,7 @@ const covers = [
 const allDramas = [];
 for (let i = 0; i < 60; i++) {
   const d = new Date(2025, 6 + Math.floor(i/5), 1 + (i % 28));
-  const u = new Date(2026, 3, 22 - Math.floor(i * 0.4));
+  const u = new Date(2026, 3, 22 - Math.floor(i * 0.4), 9 + (i % 8), (11 + i * 5) % 60);
   const totalEps = 4 + Math.floor(Math.random() * 44);
   const langCount = 1 + Math.floor(Math.random() * 3);
   const subtitleTotal = totalEps * langCount;
@@ -224,14 +243,14 @@ for (let i = 0; i < 60; i++) {
     status: statuses[i % 3 === 0 ? 0 : (i % 5 === 0 ? 2 : (i % 2 === 0 ? 0 : 1))],
     episodes: totalEps,
     created: d.toISOString().slice(0,10),
-    updated: u.toISOString().slice(0,10),
+    updated: formatDateTime(u),
     seed: 'reelshort' + (i + 1),
     cover: covers[i % covers.length],
     seriesId: 1000001 + i,
     lang: langs[i % langs.length],
     orientation: orientations[i % orientations.length],
-    owner: owners[i % owners.length],
     source: sources[i % sources.length],
+    productionMode: productionModes[i % productionModes.length],
     supportedLangs: [langs[i % langs.length], ...(['EN','ZH','JA','KO','ES'].filter(l => l !== langs[i % langs.length]).slice(0, Math.floor(Math.random()*3)))],
     videoUploaded: videoUp,
     subtitleUploaded: subtitleUp,
@@ -243,20 +262,26 @@ for (let i = 0; i < 60; i++) {
 }
 allDramas.forEach(d => { if (d.status === '已发布') d.episodes = Math.max(d.episodes, 12); });
 
+function formatDateTime(date) {
+  const pad = n => String(n).padStart(2, '0');
+  return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + ' ' + pad(date.getHours()) + ':' + pad(date.getMinutes());
+}
+
 function getFiltered() {
   let list = [...allDramas];
   if (currentFilter !== 'all') list = list.filter(d => d.status === currentFilter);
-  if (currentLang !== 'all') list = list.filter(d => d.lang === currentLang);
+  if (currentLang !== 'all') list = list.filter(d => d.supportedLangs && d.supportedLangs.includes(currentLang));
   if (currentSearch) {
     const q = currentSearch.toLowerCase();
     list = list.filter(d => (d.title + d.author).toLowerCase().includes(q));
   }
   list.sort((a, b) => {
-    if (currentSort === 'updated') return b.updated.localeCompare(a.updated);
-    if (currentSort === 'created') return b.created.localeCompare(a.created);
-    if (currentSort === 'name') return a.title.localeCompare(b.title);
-    if (currentSort === 'episodes') return b.episodes - a.episodes;
-    return 0;
+    let cmp = 0;
+    if (currentSort === 'updated') cmp = b.updated.localeCompare(a.updated);
+    else if (currentSort === 'created') cmp = b.created.localeCompare(a.created);
+    else if (currentSort === 'name') cmp = a.title.localeCompare(b.title);
+    else if (currentSort === 'episodes') cmp = b.episodes - a.episodes;
+    return currentSortDir === 'desc' ? cmp : -cmp;
   });
   return list;
 }
@@ -270,12 +295,13 @@ function render() {
 
   document.getElementById('total-count').textContent = list.length;
   document.getElementById('page-num').textContent = currentPage;
+  document.getElementById('total-pages').textContent = totalPages;
 
   const grid = document.getElementById('grid');
   grid.innerHTML = page.map(d => `
-    <a href="drama-detail.html" class="card">
+    <a href="drama-detail.html?id=${d.seriesId}" class="card">
       <div style="aspect-ratio:3/4;background:var(--gray-light);border-bottom:2px solid var(--border);overflow:hidden;position:relative">
-        <img src="${d.cover}" alt="${d.title}" style="width:100%;height:100%;object-fit:cover" onerror="this.src='https://picsum.photos/seed/${d.seed}/300/400'">
+        <img src="${d.cover}" alt="${d.title}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">
         <div class="lang-badge-wrap" style="position:absolute;top:6px;left:6px;z-index:5">
           <span style="background:var(--black);color:var(--bg);font-size:10px;font-weight:700;padding:2px 7px;border-radius:var(--radius-full);border:2px solid var(--border);cursor:default;display:inline-block">${d.lang}</span>
           <div class="lang-tooltip" style="display:none;position:absolute;top:calc(100% + 4px);left:0;background:var(--white);border:2px solid var(--border);border-radius:var(--radius-sm);box-shadow:3px 3px 0 var(--border);padding:6px 8px;white-space:nowrap;z-index:10">
@@ -292,12 +318,30 @@ function render() {
           <span class="status-badge" style="background:${statusColors[d.status]};font-size:10px;padding:1px 8px">${d.status}</span>
         </div>
       </div>
-      <div style="padding:10px 12px">
-        <div class="heading" style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.title}</div>
-        <div style="font-size:11px;color:#aaa;margin-top:2px">#${d.seriesId}</div>
-        <div style="font-size:12px;color:var(--gray);margin-top:3px">${d.author} · 归属: ${d.owner}</div>
-        <div style="font-size:12px;color:var(--gray);margin-top:2px">${d.episodes}集 · 来源: <span style="color:${d.source==='全包采买剧'?'var(--mint)':d.source==='内部剧'?'#8B5CF6':'var(--purple)'}">${d.source}</span> · 更新 ${d.updated}</div>
+      <div class="card-body">
+        <div class="title-block">
+          <div class="heading" style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${d.title}">${d.title}</div>
+          <div style="font-size:11px;color:#aaa">#${d.seriesId}</div>
+        </div>
+        <div class="author-line" title="${d.author}">${d.author}</div>
+        <div class="meta-stack" title="${d.episodes}集 · ${d.source} · ${d.productionMode} · ${d.updated}">
+          <div class="meta-line">
+            <span>${d.episodes}集</span><span>·</span>
+            <span class="meta-badge" style="${sourceStyles[d.source]}">${sourceLabels[d.source]}</span><span>·</span>
+            <span class="meta-badge" style="${productionModeStyles[d.productionMode]}">${d.productionMode}</span>
+          </div>
+          <div class="meta-date">${d.updated}</div>
+        </div>
         ${(()=>{
+            if (d.episodes === 0) {
+              return '<div class="completion-wrap" style="margin-top:6px;position:relative">'
+                + '<span class="completion-chip" style="background:var(--mint-light);border-color:var(--mint)">✓ 已就绪</span>'
+                + '<div class="completion-tooltip" style="display:none;position:absolute;bottom:calc(100% + 6px);left:0;background:var(--white);border:2px solid var(--border);border-radius:var(--radius-sm);box-shadow:3px 3px 0 var(--border);padding:8px 10px;white-space:nowrap;z-index:10;font-size:11px;min-width:140px">'
+                + '<div style="display:flex;justify-content:space-between;gap:12px"><span>视频</span><span style="font-weight:700;color:var(--mint)">0/0 (—)</span></div>'
+                + '<div style="display:flex;justify-content:space-between;gap:12px"><span>字幕</span><span style="font-weight:700;color:var(--mint)">0/0 (—)</span></div>'
+                + '<div style="display:flex;justify-content:space-between;gap:12px"><span>语言</span><span style="font-weight:700;color:var(--mint)">0/0 (—)</span></div>'
+                + '</div></div>';
+            }
             const vPct = d.episodes > 0 ? Math.round(d.videoUploaded / d.episodes * 100) : 0;
             const sPct = d.subtitleTotal > 0 ? Math.round(d.subtitleUploaded / d.subtitleTotal * 100) : 0;
             const lPct = d.langConfigured > 0 ? Math.round(d.langComplete / d.langConfigured * 100) : 0;
@@ -310,7 +354,7 @@ function render() {
                 + '<div class="completion-tooltip" style="display:none;position:absolute;bottom:calc(100% + 6px);left:0;background:var(--white);border:2px solid var(--border);border-radius:var(--radius-sm);box-shadow:3px 3px 0 var(--border);padding:8px 10px;white-space:nowrap;z-index:10;font-size:11px;min-width:140px">' + tooltipRows + '</div>'
                 + '</div>';
             } else {
-              const worst = dims.filter(x=>x.pct<100).sort((a,b)=>a.pct-b.pct)[0];
+              const worst = dims.filter(x=>x.pct<100).sort((a,b)=>a.pct-b.pct||dims.indexOf(a)-dims.indexOf(b))[0];
               const worstColor = worst.pct >= 50 ? 'background:var(--lemon-light);border-color:var(--lemon)' : 'background:var(--coral-light);border-color:var(--coral)';
               return '<div class="completion-wrap" style="margin-top:6px;position:relative">'
                 + '<span class="completion-chip" style="' + worstColor + '">' + worst.label + ' ' + worst.pct + '%</span>'
@@ -328,11 +372,12 @@ function render() {
     html += `<button class="page-btn w-9 h-9 flex items-center justify-center text-sm ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
   }
   html += `<button class="page-btn w-9 h-9 flex items-center justify-center text-sm" onclick="goPage(${currentPage + 1})" ${currentPage===totalPages?'disabled style="opacity:.4;cursor:default"':''}><iconify-icon icon="lucide:chevron-right"></iconify-icon></button>`;
+  html += `<span style="margin-left:8px;font-size:13px;color:var(--gray)">跳至 <input type="number" min="1" max="${totalPages}" value="${currentPage}" onkeydown="if(event.key==='Enter')goPage(parseInt(this.value))" style="width:48px;border:2px solid var(--border);border-radius:var(--radius-sm);text-align:center;padding:2px 4px;font-size:13px;font-weight:600;outline:none"> 页</span>`;
   pag.innerHTML = html;
 
   // Update lang counts
   const langCounts = {all: allDramas.length, EN:0, ZH:0, JA:0, KO:0, ES:0, FR:0, TH:0, PT:0, DE:0, AR:0, HI:0, ID:0, VI:0, TR:0, RU:0};
-  allDramas.forEach(d => { if (langCounts[d.lang] !== undefined) langCounts[d.lang]++; });
+  allDramas.forEach(d => { if (d.supportedLangs) d.supportedLangs.forEach(l => { if (langCounts[l] !== undefined) langCounts[l]++; }); });
   Object.keys(langCounts).forEach(k => {
     const el = document.getElementById('lang-count-' + k);
     if (el) el.textContent = langCounts[k];
@@ -364,9 +409,23 @@ function applySearch() {
   render();
 }
 function applySort(btn) {
-  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  const sort = btn.dataset.sort;
+  if (currentSort === sort) {
+    currentSortDir = currentSortDir === 'desc' ? 'asc' : 'desc';
+  } else {
+    currentSort = sort;
+    currentSortDir = 'desc';
+  }
+  document.querySelectorAll('.sort-btn').forEach(b => {
+    b.classList.remove('active');
+    const arrow = b.querySelector('.sort-arrow');
+    if (arrow) arrow.remove();
+  });
   btn.classList.add('active');
-  currentSort = btn.dataset.sort;
+  const arrow = document.createElement('span');
+  arrow.className = 'sort-arrow';
+  arrow.textContent = currentSortDir === 'desc' ? ' ↓' : ' ↑';
+  btn.appendChild(arrow);
   currentPage = 1;
   render();
 }
@@ -397,9 +456,9 @@ document.addEventListener('click', function(e) {
   }
 });
 
+// Init sort arrow
+document.querySelector('.sort-btn.active').appendChild(Object.assign(document.createElement('span'), {className:'sort-arrow', textContent:' ↓'}));
 render();
-
-// Toast
 const toastMsgs = {
   episodes_added: '剧集添加成功，共添加 4 集',
   drama_saved: '漫剧已保存',

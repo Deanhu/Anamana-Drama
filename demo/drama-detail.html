@@ -38,9 +38,14 @@
     .tab-pill:not(.active):hover { background: var(--lemon-light); }
     .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius-sm); transition: all 0.15s; cursor: pointer; }
     .upload-zone:hover { background: var(--lemon-light); border-style: solid; border-color: var(--lemon); }
-    .tag-pill { border: 2px solid var(--border); border-radius: var(--radius-full); font-weight: 600; display: inline-flex; align-items: center; gap: 4px; padding: 3px 12px; font-size: 13px; }
+    .tag-pill { border: 2px solid var(--border); border-radius: var(--radius-full); font-weight: 600; display: inline-flex; align-items: center; gap: 4px; padding: 3px 12px; font-size: 13px; transition: opacity 0.12s, transform 0.12s, box-shadow 0.12s; user-select: none; }
     .tag-pill .rm { cursor: pointer; }
     .tag-pill .rm:hover { color: var(--coral); }
+    .tag-pill[draggable="true"] { cursor: grab; }
+    .tag-pill[draggable="true"]:active { cursor: grabbing; }
+    .tag-pill.dragging { opacity: 0.4; }
+    .tag-pill.drag-over { transform: scale(1.05); box-shadow: var(--shadow); border-color: var(--purple); }
+    #tag-box { transition: box-shadow 0.12s; }
     .sub-panel { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
     .sub-panel.open { max-height: 500px; }
     .ep-row { border: 2px solid var(--border); border-radius: var(--radius-sm); transition: transform 0.1s; background: var(--white); }
@@ -175,32 +180,13 @@
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-semibold mb-1.5">归属人 <span style="color:var(--coral)">*</span></label>
-              <select class="prefilled input-field w-full px-4 py-2.5 text-sm cursor-pointer">
-                <option value="Alex Morgan" selected>Alex Morgan</option>
-                <option value="Rachel Chen">Rachel Chen</option>
-                <option value="Jake Wilson">Jake Wilson</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-semibold mb-1.5">语言 <span style="color:var(--coral)">*</span></label>
-              <select class="prefilled input-field w-full px-4 py-2.5 text-sm cursor-pointer">
-                <option value="EN" selected>EN · 英语</option>
-                <option value="ZH">ZH · 中文</option>
-                <option value="JA">JA · 日本語</option>
-                <option value="KO">KO · 한국어</option>
-                <option value="ES">ES · Español</option>
-                <option value="FR">FR · Français</option>
-                <option value="TH">TH · ไทย</option>
-                <option value="PT">PT · Português</option>
-                <option value="DE">DE · Deutsch</option>
-                <option value="AR">AR · العربية</option>
-                <option value="HI">HI · हिन्दी</option>
-                <option value="ID">ID · Bahasa Indonesia</option>
-                <option value="VI">VI · Tiếng Việt</option>
-                <option value="TR">TR · Türkçe</option>
-                <option value="RU">RU · Русский</option>
-              </select>
+              <label class="block text-sm font-semibold mb-1.5">归属人</label>
+              <input type="text" value="Alex Morgan" readonly class="input-field w-full px-4 py-2.5 text-sm bg-gray-50 cursor-not-allowed" style="border:1px solid var(--border)">
+              <p class="text-xs mt-1" style="color:var(--gray)">自动填入当前登录账号</p>
+            </div><div>
+              <label class="block text-sm font-semibold mb-1.5">语言</label>
+              <input type="text" value="EN · 英语" readonly class="input-field w-full px-4 py-2.5 text-sm bg-gray-50 cursor-not-allowed" style="border:1px solid var(--border)">
+              <p class="text-xs mt-1" style="color:var(--gray)">原始语言固定为英文</p>
             </div>
           </div>
           <div class="grid grid-cols-2 gap-4">
@@ -223,7 +209,7 @@
               </select>
             </div>
           </div>
-          <div class="grid grid-cols-3 gap-4">
+          <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-semibold mb-1.5">横竖屏 <span style="color:var(--coral)">*</span></label>
               <div class="flex items-center gap-4 mt-1">
@@ -235,10 +221,7 @@
                 </label>
               </div>
             </div>
-            <div>
-              <label class="block text-sm font-semibold mb-1.5">总集数 <span style="color:var(--coral)">*</span></label>
-              <input id="total-ep-input" type="number" min="1" max="9999" value="24" class="prefilled input-field w-full px-4 py-2.5 text-sm" oninput="updateTotalEpCount()">
-            </div>
+
             <div>
               <label class="block text-sm font-semibold mb-1.5">类型（分类）</label>
               <select class="prefilled input-field w-full px-4 py-2.5 text-sm cursor-pointer">
@@ -262,10 +245,10 @@
             <label class="block text-sm font-semibold mb-1.5">Tag 标签</label>
             <div class="relative" id="tag-wrapper">
               <div id="tag-box" class="input-field flex flex-wrap items-center gap-2 px-3 py-2.5 min-h-[44px] cursor-pointer" onclick="toggleTagDropdown()">
-                <span class="tag-pill" style="background:var(--purple-light)">Mafia <iconify-icon icon="lucide:x" class="rm text-xs" onclick="event.stopPropagation();this.parentElement.remove()"></iconify-icon></span>
-                <span class="tag-pill" style="background:var(--coral-light)">Romance <iconify-icon icon="lucide:x" class="rm text-xs" onclick="event.stopPropagation();this.parentElement.remove()"></iconify-icon></span>
-                <span class="tag-pill" style="background:var(--lemon-light)">Suspense <iconify-icon icon="lucide:x" class="rm text-xs" onclick="event.stopPropagation();this.parentElement.remove()"></iconify-icon></span>
-                <span class="text-xs flex-1 min-w-[80px]" style="color:var(--gray)">点击从标签库选择...</span>
+                <span class="tag-pill" draggable="true" style="background:var(--purple-light)">Mafia <iconify-icon icon="lucide:x" class="rm text-xs" onclick="event.stopPropagation();this.parentElement.remove()"></iconify-icon></span>
+                <span class="tag-pill" draggable="true" style="background:var(--coral-light)">Romance <iconify-icon icon="lucide:x" class="rm text-xs" onclick="event.stopPropagation();this.parentElement.remove()"></iconify-icon></span>
+                <span class="tag-pill" draggable="true" style="background:var(--lemon-light)">Suspense <iconify-icon icon="lucide:x" class="rm text-xs" onclick="event.stopPropagation();this.parentElement.remove()"></iconify-icon></span>
+                <span id="tag-placeholder" class="text-xs flex-1 min-w-[80px]" style="color:var(--gray)">点击从标签库选择...</span>
               </div>
               <div id="tag-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:20;background:var(--white);border:2px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:6px;max-height:180px;overflow-y:auto">
               </div>
@@ -279,12 +262,12 @@
         </h2>
         <div class="grid grid-cols-1 gap-4">
           <div id="cover-section">
-            <div class="text-xs font-semibold mb-1.5">静态封面 <span style="color:var(--coral)">*</span></div>
+            <div class="text-xs font-semibold mb-1.5">剧默认栏位封面 <span style="color:var(--coral)">*</span></div>
             <div id="cover-upload" class="hidden">
               <div class="upload-zone flex flex-col items-center justify-center h-40 text-center">
                 <iconify-icon icon="lucide:upload-cloud" class="text-2xl mb-1" style="color:var(--gray)"></iconify-icon>
                 <span class="text-xs font-semibold">点击上传封面</span>
-                <span class="text-xs" style="color:var(--gray)">516×765px, ≤300KB</span>
+                <span class="text-xs" style="color:var(--gray)">516×765px, ≤300KB · logo 合成在封面内</span>
               </div>
             </div>
             <div id="cover-preview" class="edit-only">
@@ -297,7 +280,29 @@
                   </div>
                 </div>
               </div>
-              <p class="text-xs mt-1" style="color:var(--gray)">516×765px, ≤300KB</p>
+              <p class="text-xs mt-1" style="color:var(--gray)">516×765px, ≤300KB · logo 合成在封面内</p>
+            </div>
+          </div>
+          <div id="banner-section">
+            <div class="text-xs font-semibold mb-1.5">剧大封面 / 首页 Banner <span style="color:var(--coral)">*</span></div>
+            <div id="banner-upload" class="hidden">
+              <div class="upload-zone flex flex-col items-center justify-center h-40 text-center">
+                <iconify-icon icon="lucide:upload-cloud" class="text-2xl mb-1" style="color:var(--gray)"></iconify-icon>
+                <span class="text-xs font-semibold">点击上传 Banner</span>
+                <span class="text-xs" style="color:var(--gray)">720×1067px, ≤500KB</span>
+              </div>
+            </div>
+            <div id="banner-preview" class="edit-only">
+              <div class="relative group overflow-hidden" style="border:2px solid var(--border);border-radius:var(--radius-sm)">
+                <img src="https://picsum.photos/seed/home-banner/360/534" class="w-full h-40 object-cover">
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                  <div class="flex items-center gap-2">
+                    <span onclick="openImagePreview(this.closest('.group').querySelector('img').src)" class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">预览</span>
+                    <span class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">重新上传</span>
+                  </div>
+                </div>
+              </div>
+              <p class="text-xs mt-1" style="color:var(--gray)">720×1067px, ≤500KB</p>
             </div>
           </div>
           <!-- 其他素材（选填）折叠区 -->
@@ -342,7 +347,7 @@
           <h2 class="heading text-lg font-bold flex items-center gap-2">
             <span class="inline-block w-3 h-3" style="background:var(--mint);border:2px solid var(--border);border-radius:3px"></span>剧集管理
           </h2>
-          <span id="ep-progress-text" class="text-sm"><span style="color:var(--gray)">已上传</span> <span class="font-bold">8</span><span style="color:var(--gray)"> 集 · 共 24 集</span></span>
+          <span id="ep-progress-text" class="text-sm"><span style="color:var(--gray)">已上传</span> <span class="font-bold">8</span><span style="color:var(--gray)"> 集</span></span>
           <div class="w-28 h-3 overflow-hidden" style="border:2px solid var(--border);border-radius:var(--radius-full);background:var(--white)"><div class="h-full" style="width:33%;background:var(--mint)"></div></div>
         </div>
         <div class="flex items-center gap-2">
@@ -404,7 +409,7 @@
       <!-- Format requirements -->
       <div class="p-3 mb-4 flex items-start gap-2" style="background:var(--lemon-light);border:2px solid var(--border);border-radius:var(--radius-sm)">
         <iconify-icon icon="lucide:info" class="text-base mt-0.5"></iconify-icon>
-        <span class="text-sm font-semibold">视频: MP4, H.264, 720P+, 24-60fps, ≤500MB · 字幕: SRT/VTT, UTF-8</span>
+        <span class="text-sm font-semibold">视频: MP4, 9:16 竖屏, 1080P, ≤300MB · 字幕: SRT/VTT, UTF-8</span>
       </div>
 
       <!-- Episode Matrix Table -->
@@ -450,9 +455,9 @@
         <div id="ep-drop-zone" class="batch-drop mb-4" onclick="simulateFileSelect()">
           <iconify-icon icon="lucide:upload-cloud" class="text-4xl mb-2" style="color:var(--gray)"></iconify-icon>
           <div class="text-sm font-semibold mb-1">拖放视频文件到此处，或点击选择文件</div>
-          <div class="text-xs" style="color:var(--gray)">MP4 · H.264 · 720P+ · ≤500MB · 支持多选</div>
+          <div class="text-xs" style="color:var(--gray)">MP4 · 9:16 竖屏 · 1080P · ≤300MB · 支持多选</div>
         </div>
-        <!-- State 2: Parsed file list (hidden initially) -->
+        <!-- State 2: Selected file list (hidden initially) -->
         <div id="ep-file-list" style="display:none">
           <div class="flex items-center justify-between mb-3">
             <span class="text-sm font-bold">已选择 <span id="ep-file-count">4</span> 个文件</span>
@@ -461,7 +466,7 @@
           <div class="flex flex-col gap-2 mb-4" id="ep-parsed-files"></div>
           <div class="p-3 mb-4 flex items-start gap-2" style="background:var(--lemon-light);border:2px solid var(--border);border-radius:var(--radius-sm)">
             <iconify-icon icon="lucide:lightbulb" class="text-base mt-0.5" style="color:#d97706"></iconify-icon>
-            <span class="text-sm font-semibold">集数从文件名自动识别，如需调整请重新命名文件后再次选择</span>
+            <span class="text-sm font-semibold">确认后将按列表顺序添加到剧集矩阵中</span>
           </div>
           <div class="flex items-center justify-end gap-3">
             <button class="btn btn-secondary px-5 py-2.5 text-sm" onclick="closeBatchEpModal()">取消</button>
@@ -494,24 +499,37 @@ document.addEventListener('click', function(e) {
 });
 function addTag(v) {
   v = v.trim(); if (!v) return;
-  const pills = document.querySelectorAll('.tag-pill');
-  for (const p of pills) if (p.textContent.trim().replace(/×/g,'').trim() === v) return;
+  const pills = document.querySelectorAll('#tag-box .tag-pill');
+  for (const p of pills) if (getTagText(p) === v) return;
   const s = document.createElement('span');
   s.className = 'tag-pill'; s.style.background = colors[ci++ % colors.length];
-  s.innerHTML = v + ' <iconify-icon icon="lucide:x" class="rm text-xs" onclick="event.stopPropagation();this.parentElement.remove()"></iconify-icon>';
-  document.getElementById('tag-input').before(s);
+  s.setAttribute('draggable', 'true');
+  s.innerHTML = v + ' <iconify-icon icon="lucide:x" class="rm text-xs" onclick="event.stopPropagation();this.parentElement.remove();syncTagPlaceholder()"></iconify-icon>';
+  attachTagDragHandlers(s);
+  document.getElementById('tag-placeholder').before(s);
+  syncTagPlaceholder();
   filterTagSuggestions();
 }
 function getExistingTags() {
-  return Array.from(document.querySelectorAll('#tag-box .tag-pill')).map(p => p.textContent.trim().replace(/×/g,'').trim());
+  return Array.from(document.querySelectorAll('#tag-box .tag-pill')).map(getTagText);
+}
+function getTagText(pill) {
+  // 取 pill 的直接文本节点，排除 × 图标里的文本
+  return Array.from(pill.childNodes).filter(n => n.nodeType === 3).map(n => n.textContent.trim()).join('').trim();
+}
+function syncTagPlaceholder() {
+  const ph = document.getElementById('tag-placeholder');
+  if (!ph) return;
+  ph.style.display = getExistingTags().length ? 'none' : 'block';
 }
 function showTagSuggestions() { filterTagSuggestions(); document.getElementById('tag-suggestions').style.display = 'block'; }
 function hideTagSuggestions() { setTimeout(() => { document.getElementById('tag-suggestions').style.display = 'none'; }, 150); }
 function filterTagSuggestions() {
-  const q = (document.getElementById('tag-input').value || '').trim().toLowerCase();
+  const q = (document.getElementById('tag-input') ? document.getElementById('tag-input').value : '').trim().toLowerCase();
   const existing = getExistingTags();
   const filtered = TAG_LIBRARY.filter(t => !existing.includes(t) && (!q || t.toLowerCase().includes(q)));
   const el = document.getElementById('tag-suggestions');
+  if (!el) return;
   if (filtered.length === 0) { el.style.display = 'none'; return; }
   el.innerHTML = '<div class="text-xs font-semibold px-2 py-1" style="color:var(--gray)">建议标签</div>' + filtered.map(t =>
     `<div class="flex items-center gap-2 px-2 py-1.5 text-sm font-medium cursor-pointer" style="border-radius:6px" onmouseover="this.style.background='var(--lemon-light)'" onmouseout="this.style.background=''" onmousedown="event.preventDefault();addTag('${t}');document.getElementById('tag-input').value=''">${t}</div>`
@@ -520,7 +538,47 @@ function filterTagSuggestions() {
 }
 document.addEventListener('click', function(e) {
   const w = document.getElementById('tag-wrapper');
-  if (w && !w.contains(e.target)) document.getElementById('tag-suggestions').style.display = 'none';
+  if (w && !w.contains(e.target)) {
+    const dd = document.getElementById('tag-dropdown');
+    if (dd) dd.style.display = 'none';
+    const sg = document.getElementById('tag-suggestions');
+    if (sg) sg.style.display = 'none';
+  }
+});
+
+// === Tag 拖拽排序（v1.0.9：单剧内调整顺序，不影响标签库全局）===
+function attachTagDragHandlers(pill) {
+  pill.addEventListener('dragstart', function(e) {
+    pill.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', getTagText(pill));
+  });
+  pill.addEventListener('dragend', function() {
+    pill.classList.remove('dragging');
+    document.querySelectorAll('#tag-box .tag-pill.drag-over').forEach(p => p.classList.remove('drag-over'));
+  });
+  pill.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (!pill.classList.contains('dragging')) pill.classList.add('drag-over');
+  });
+  pill.addEventListener('dragleave', function() {
+    pill.classList.remove('drag-over');
+  });
+  pill.addEventListener('drop', function(e) {
+    e.preventDefault();
+    pill.classList.remove('drag-over');
+    const dragging = document.querySelector('#tag-box .tag-pill.dragging');
+    if (!dragging || dragging === pill) return;
+    // 落点：鼠标在目标 pill 前半则插前面，后半插后面
+    const rect = pill.getBoundingClientRect();
+    const after = (e.clientX - rect.left) > rect.width / 2;
+    pill.parentNode.insertBefore(dragging, after ? pill.nextSibling : pill);
+  });
+}
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('#tag-box .tag-pill').forEach(attachTagDragHandlers);
+  syncTagPlaceholder();
 });
 function switchTab(name, btn) {
   document.querySelectorAll('.tab-panel').forEach(p => { p.classList.add('hidden'); p.classList.remove('fade'); });
@@ -558,9 +616,10 @@ const epData = [
 ];
 
 const multiLangData = {
-  EN: { title: 'Married The Mafioso I Saved', titleSource: 'manual', cover: true, synopsis: 'A young woman discovers she\'s been married off to a feared mafia boss to settle her family\'s debt. As she navigates the dangerous underworld, she uncovers unexpected tenderness beneath his cold exterior.', synopsisSource: 'manual' },
-  ZH: { title: '我救下的黑帮大佬成了我的丈夫', titleSource: 'auto', cover: true, synopsis: '一个年轻女子发现自己被嫁给了一个令人畏惧的黑帮老大，以偿还家人的债务。当她在危险的黑社会中周旋时，她发现了他冷酷外表下意想不到的温柔。', synopsisSource: 'auto' },
-  JA: { title: '救ったマフィアが私の夫に', titleSource: 'auto', cover: true, synopsis: '若い女性が、家族の借金を返すために恐れられているマフィアのボスと結婚させられたことを知る。危険な裏社会を渡り歩く中で、彼女は彼の冷たい外見の下に予想外の優しさを発見する。', synopsisSource: 'auto' },
+  EN: { title: 'Married The Mafioso I Saved', titleSource: 'manual', cover: true, banner: true, synopsis: 'A young woman discovers she\'s been married off to a feared mafia boss to settle her family\'s debt. As she navigates the dangerous underworld, she uncovers unexpected tenderness beneath his cold exterior.', synopsisSource: 'manual' },
+  ZH: { title: '我救下的黑帮大佬成了我的丈夫', titleSource: 'auto', cover: true, banner: true, synopsis: '一个年轻女子发现自己被嫁给了一个令人畏惧的黑帮老大，以偿还家人的债务。当她在危险的黑社会中周旋时，她发现了他冷酷外表下意想不到的温柔。', synopsisSource: 'auto' },
+  // QA example: ZH is complete, JA is intentionally incomplete so both card states are visible by default.
+  JA: { title: '救ったマフィアが私の夫に', titleSource: 'auto', cover: true, banner: true },
 };
 
 function getSubCount(code) {
@@ -578,6 +637,14 @@ function buildCoverCell(code, data, height) {
     return `<div><div class="text-xs font-semibold mb-1.5">封面</div><div class="relative group overflow-hidden" style="border:2px solid var(--border);border-radius:var(--radius-sm)"><img src="https://picsum.photos/seed/cover-${seed}/300/200" class="w-full ${height} object-cover"><div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><div class="flex items-center gap-2"><span onclick="openImagePreview(this.closest('.group').querySelector('img').src)" class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">预览</span><span class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">重新上传</span></div></div></div><div class="flex items-center gap-1 mt-1"><iconify-icon icon="lucide:check-circle-2" class="text-xs" style="color:var(--mint)"></iconify-icon><span class="text-xs" style="color:var(--mint)">已上传</span><span class="text-xs ml-auto" style="color:var(--gray)">516×765px</span></div></div>`;
   }
   return `<div><div class="text-xs font-semibold mb-1.5">封面</div><div class="upload-zone flex flex-col items-center justify-center ${height} text-center"><iconify-icon icon="lucide:upload-cloud" class="text-2xl mb-1" style="color:var(--gray)"></iconify-icon><span class="text-xs font-semibold">点击上传</span><span class="text-xs" style="color:var(--gray)">516×765px, ≤300KB</span></div><div class="flex items-center gap-1 mt-1"><iconify-icon icon="lucide:alert-circle" class="text-xs" style="color:var(--coral)"></iconify-icon><span class="text-xs" style="color:var(--coral)">未上传</span></div></div>`;
+}
+
+function buildBannerCell(code, data, height) {
+  if (data && data.banner) {
+    const seed = code.toLowerCase();
+    return `<div><div class="text-xs font-semibold mb-1.5">Banner</div><div class="relative group overflow-hidden" style="border:2px solid var(--border);border-radius:var(--radius-sm)"><img src="https://picsum.photos/seed/banner-${seed}/360/534" class="w-full ${height} object-cover"><div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><div class="flex items-center gap-2"><span onclick="openImagePreview(this.closest('.group').querySelector('img').src)" class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">预览</span><span class="text-white text-xs font-bold px-3 py-1.5" style="border:2px solid #fff;border-radius:var(--radius-sm);cursor:pointer">重新上传</span></div></div></div><div class="flex items-center gap-1 mt-1"><iconify-icon icon="lucide:check-circle-2" class="text-xs" style="color:var(--mint)"></iconify-icon><span class="text-xs" style="color:var(--mint)">已上传</span><span class="text-xs ml-auto" style="color:var(--gray)">720×1067px</span></div></div>`;
+  }
+  return `<div><div class="text-xs font-semibold mb-1.5">Banner</div><div class="upload-zone flex flex-col items-center justify-center ${height} text-center"><iconify-icon icon="lucide:upload-cloud" class="text-2xl mb-1" style="color:var(--gray)"></iconify-icon><span class="text-xs font-semibold">点击上传</span><span class="text-xs" style="color:var(--gray)">720×1067px, ≤500KB</span></div><div class="flex items-center gap-1 mt-1"><iconify-icon icon="lucide:alert-circle" class="text-xs" style="color:var(--coral)"></iconify-icon><span class="text-xs" style="color:var(--coral)">未上传</span></div></div>`;
 }
 
 function buildTitleCell(code, data) {
@@ -620,23 +687,26 @@ function renderMultiLangSection() {
   let html = '';
 
   // ① Completeness summary bar
-  let titleDone = 0, coverDone = 0, synopsisDone = 0;
+  let titleDone = 0, coverDone = 0, bannerDone = 0, synopsisDone = 0;
   activeLangs.forEach(code => {
     const d = multiLangData[code] || {};
     if (d.title) titleDone++;
     if (d.cover) coverDone++;
+    if (d.banner) bannerDone++;
     if (d.synopsis) synopsisDone++;
   });
   const total = activeLangs.length;
-  const completeLangs = activeLangs.filter(code => { const d = multiLangData[code] || {}; return d.title && d.cover && d.synopsis; }).length;
+  const completeLangs = activeLangs.filter(code => { const d = multiLangData[code] || {}; return d.title && d.cover && d.banner && d.synopsis; }).length;
   const pct = total > 0 ? Math.round(completeLangs / total * 100) : 0;
   html += `<div class="flex flex-wrap items-center gap-3 mb-5 p-3" style="background:var(--gray-light);border:2px solid var(--border);border-radius:var(--radius-sm)">`;
   html += `<div class="flex items-center gap-2 mr-2"><div class="w-28 h-3 overflow-hidden" style="border:2px solid var(--border);border-radius:var(--radius-full);background:var(--white)"><div class="h-full" style="width:${pct}%;background:var(--mint)"></div></div><span class="text-xs font-bold">${completeLangs}/${total} 语种完整</span></div>`;
   var titleBg = titleDone===total ? 'var(--mint-light)' : 'var(--coral-light)';
   var covBg = coverDone===total ? 'var(--mint-light)' : 'var(--coral-light)';
+  var banBg = bannerDone===total ? 'var(--mint-light)' : 'var(--coral-light)';
   var synBg = synopsisDone===total ? 'var(--mint-light)' : 'var(--coral-light)';
   html += '<span class="stat-chip" style="background:' + titleBg + '">剧集名 ' + titleDone + '/' + total + '</span>';
   html += '<span class="stat-chip" style="background:' + covBg + '">封面 ' + coverDone + '/' + total + '</span>';
+  html += '<span class="stat-chip" style="background:' + banBg + '">Banner ' + bannerDone + '/' + total + '</span>';
   html += '<span class="stat-chip" style="background:' + synBg + '">简介 ' + synopsisDone + '/' + total + '</span>';
   html += `<span class="stat-chip" style="background:var(--bg)">字幕详见剧集管理</span>`;
   html += `</div>`;
@@ -650,11 +720,13 @@ function renderMultiLangSection() {
   html += `<div class="flex items-center gap-2"><iconify-icon icon="lucide:chevron-right" class="text-sm lang-chevron transition-transform" style="transform:rotate(90deg)"></iconify-icon><span class="text-sm font-bold">EN</span><span class="text-xs" style="color:var(--gray)">English</span><span class="text-xs font-bold px-2 py-0.5" style="background:var(--coral);color:#fff;border-radius:var(--radius-full)">必填</span></div>`;
   var enTitleC = enData.title ? 'var(--mint)' : 'var(--coral)';
   var enCovC = enData.cover ? 'var(--mint)' : 'var(--coral)';
+  var enBanC = enData.banner ? 'var(--mint)' : 'var(--coral)';
   var enSynC = enData.synopsis ? 'var(--mint)' : 'var(--coral)';
-  html += '<div class="flex items-center gap-3 text-xs">' + '<span style="color:' + enTitleC + '">剧集名 ' + (enData.title ? '✓' : '✗') + '</span>' + '<span style="color:' + enCovC + '">封面 ' + (enData.cover ? '✓' : '✗') + '</span>' + '<span style="color:' + enSynC + '">简介 ' + (enData.synopsis ? '✓' : '✗') + '</span>' + '<span style="color:var(--mint)">字幕 ' + enSub.done + '/' + enSub.total + '</span></div>';
-  html += `</div><div class="lang-content p-4" style="border-top:2px solid var(--border)"><div class="grid grid-cols-1 md:grid-cols-3 gap-4">`;
+  html += '<div class="flex items-center gap-3 text-xs">' + '<span style="color:' + enTitleC + '">剧集名 ' + (enData.title ? '✓' : '✗') + '</span>' + '<span style="color:' + enCovC + '">封面 ' + (enData.cover ? '✓' : '✗') + '</span>' + '<span style="color:' + enBanC + '">Banner ' + (enData.banner ? '✓' : '✗') + '</span>' + '<span style="color:' + enSynC + '">简介 ' + (enData.synopsis ? '✓' : '✗') + '</span>' + '<span style="color:var(--mint)">字幕 ' + enSub.done + '/' + enSub.total + '</span></div>';
+  html += `</div><div class="lang-content p-4" style="border-top:2px solid var(--border)"><div class="grid grid-cols-1 md:grid-cols-4 gap-4">`;
   html += buildTitleCell('EN', enData);
   html += buildCoverCell('EN', enData, 'h-32');
+  html += buildBannerCell('EN', enData, 'h-32');
   html += buildSynopsisCell('EN', enData, 5);
   html += `</div><div class="mt-3 pt-3" style="border-top:2px solid var(--border)"><div class="flex items-center gap-2"><span class="text-xs font-semibold">字幕</span><span class="text-xs px-2 py-0.5" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-full)">${enSub.done} / ${enSub.total} 集已上传</span><span class="text-xs ml-auto cursor-pointer font-semibold" style="color:var(--purple)" onclick="goToEpisodeTab()">在「剧集管理」中管理 →</span></div></div></div></div>`;
 
@@ -666,19 +738,21 @@ function renderMultiLangSection() {
     others.forEach(code => {
       const d = multiLangData[code] || {};
       const sub = getSubCount(code);
-      const items = [d.title, d.cover, d.synopsis];
+      const items = [d.title, d.cover, d.banner, d.synopsis];
       const done = items.filter(Boolean).length;
-      const allDone = done === 3;
+      const allDone = done === 4;
       const borderColor = allDone ? 'var(--mint)' : 'var(--border)';
       const bgColor = allDone ? 'var(--mint-light)' : 'var(--white)';
       html += `<div class="lang-card cursor-pointer" data-lang="${code}" onclick="openLangDetail('${code}')" style="border:2px solid ${borderColor};border-radius:var(--radius-sm);padding:10px 12px;background:${bgColor};transition:all 0.15s">`;
       html += `<div class="flex items-center justify-between mb-1.5"><span class="font-bold text-sm heading" style="color:${langFg(code)}">${code}</span><span class="text-xs" style="color:var(--gray)">${langName(code)}</span></div>`;
       var cTitle = d.title ? 'var(--mint)' : 'var(--coral)';
       var cCov = d.cover ? 'var(--mint)' : 'var(--coral)';
+      var cBan = d.banner ? 'var(--mint)' : 'var(--coral)';
       var cSyn = d.synopsis ? 'var(--mint)' : 'var(--coral)';
       html += '<div class="flex items-center gap-2 text-xs">';
       html += '<span style="color:' + cTitle + '">名' + (d.title ? '✓' : '✗') + '</span>';
       html += '<span style="color:' + cCov + '">封' + (d.cover ? '✓' : '✗') + '</span>';
+      html += '<span style="color:' + cBan + '">Ban' + (d.banner ? '✓' : '✗') + '</span>';
       html += '<span style="color:' + cSyn + '">简' + (d.synopsis ? '✓' : '✗') + '</span>';
       html += '<span style="color:var(--gray)">字' + sub.done + '/' + sub.total + '</span>';
       html += `</div></div>`;
@@ -756,9 +830,10 @@ function openLangDetail(code) {
   title.innerHTML = `<span style="color:${langFg(code)}">${code}</span> ${langName(code)}`;
   const d = multiLangData[code] || {};
   const sub = getSubCount(code);
-  let h = `<div class="grid grid-cols-1 md:grid-cols-3 gap-4">`;
+  let h = `<div class="grid grid-cols-1 md:grid-cols-4 gap-4">`;
   h += buildTitleCell(code, d);
   h += buildCoverCell(code, d, 'h-28');
+  h += buildBannerCell(code, d, 'h-28');
   h += buildSynopsisCell(code, d, 4);
   h += `</div><div class="mt-3 pt-3" style="border-top:2px solid var(--border)"><div class="flex items-center gap-2"><span class="text-xs font-semibold">字幕</span><span class="text-xs px-2 py-0.5" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-full)">${sub.done} / ${sub.total} 集已上传</span><span class="text-xs ml-auto cursor-pointer font-semibold" style="color:var(--purple)" onclick="goToEpisodeTab()">管理字幕 →</span></div></div>`;
   body.innerHTML = h;
@@ -1045,6 +1120,7 @@ if (new URLSearchParams(location.search).get('mode') === 'create') {
     document.querySelectorAll('.edit-only').forEach(el => el.style.display='none');
   // Show cover upload zone for create mode
   document.getElementById('cover-upload').classList.remove('hidden');
+  document.getElementById('banner-upload').classList.remove('hidden');
   document.getElementById('series-id-display').textContent = '自动生成';
   document.getElementById('series-id-display').style.fontStyle = 'italic';
   // Reset multilang data for create mode
@@ -1081,14 +1157,12 @@ function updateSynCount(id, max) {
   el.textContent = len + '/' + max;
   el.style.color = len > max * 0.9 ? 'var(--coral)' : 'var(--gray)';
 }
-function updateTotalEpCount() {
-  const input = document.getElementById('total-ep-input');
-  const el = document.getElementById('ep-progress-text');
-  if (!input || !el) return;
-  const total = parseInt(input.value) || 0;
-  const uploaded = document.querySelectorAll('#ep-matrix tbody tr').length;
-  el.innerHTML = '<span style="color:var(--gray)">已上传</span> <span class="font-bold">' + uploaded + '</span><span style="color:var(--gray)"> 集 · 共 ' + total + ' 集</span>';
-}
+	function updateTotalEpCount() {
+	  const el = document.getElementById('ep-progress-text');
+	  if (!el) return;
+	  const uploaded = document.querySelectorAll('#episode-matrix tbody tr, #ep-matrix tbody tr').length;
+	  el.innerHTML = '<span style="color:var(--gray)">已上传</span> <span class="font-bold">' + uploaded + '</span><span style="color:var(--gray)"> 集</span>';
+	}
 // ⑧ Form validation on publish
 function validateAndPublish() {
 	  document.querySelectorAll('.validation-error').forEach(el => {
@@ -1107,12 +1181,13 @@ function validateAndPublish() {
 	      }
 	    }
 	  });
-	  // Check EN multilingual: title, synopsis, cover
+		  // Check EN multilingual: title, synopsis, cover, banner
 	  const enTitle = document.getElementById('title-EN');
 	  const enSyn = document.getElementById('syn-EN');
-	  if (enTitle && !enTitle.value.trim()) { enTitle.style.borderColor='var(--coral)'; enTitle.style.boxShadow='0 0 0 3px var(--coral-light)'; errors.push(enTitle); }
-	  if (enSyn && !enSyn.value.trim()) { enSyn.style.borderColor='var(--coral)'; enSyn.style.boxShadow='0 0 0 3px var(--coral-light)'; errors.push(enSyn); }
-	  if (!(multiLangData['EN'] && multiLangData['EN'].cover)) { showToast('请上传英语封面'); return; }
+		  if (enTitle && !enTitle.value.trim()) { enTitle.style.borderColor='var(--coral)'; enTitle.style.boxShadow='0 0 0 3px var(--coral-light)'; errors.push(enTitle); }
+		  if (enSyn && !enSyn.value.trim()) { enSyn.style.borderColor='var(--coral)'; enSyn.style.boxShadow='0 0 0 3px var(--coral-light)'; errors.push(enSyn); }
+		  if (!(multiLangData['EN'] && multiLangData['EN'].cover)) { showToast('请上传英语封面'); return; }
+		  if (!(multiLangData['EN'] && multiLangData['EN'].banner)) { showToast('请上传英语 Banner'); return; }
 	  if (errors.length > 0) {
 	    errors[0].scrollIntoView({behavior:'smooth', block:'center'});
 	    showToast('请完善必填项后再发布');
