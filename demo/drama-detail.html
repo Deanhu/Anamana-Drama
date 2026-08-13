@@ -38,13 +38,17 @@
     .tab-pill:not(.active):hover { background: var(--lemon-light); }
     .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius-sm); transition: all 0.15s; cursor: pointer; }
     .upload-zone:hover { background: var(--lemon-light); border-style: solid; border-color: var(--lemon); }
-    .tag-pill { border: 2px solid var(--border); border-radius: var(--radius-full); font-weight: 600; display: inline-flex; align-items: center; gap: 4px; padding: 3px 12px; font-size: 13px; transition: opacity 0.12s, transform 0.12s, box-shadow 0.12s; user-select: none; }
+    .tag-pill { border: 2px solid var(--border); border-radius: var(--radius-full); font-weight: 600; display: inline-flex; align-items: center; gap: 4px; padding: 3px 12px 3px 6px; font-size: 13px; transition: opacity 0.12s, transform 0.12s, box-shadow 0.12s; user-select: none; }
     .tag-pill .rm { cursor: pointer; }
     .tag-pill .rm:hover { color: var(--coral); }
+    .tag-pill .handle { cursor: grab; display: inline-flex; align-items: center; color: var(--gray); padding-right: 2px; }
+    .tag-pill .handle:active { cursor: grabbing; }
     .tag-pill[draggable="true"] { cursor: grab; }
     .tag-pill[draggable="true"]:active { cursor: grabbing; }
     .tag-pill.dragging { opacity: 0.4; }
     .tag-pill.drag-over { transform: scale(1.05); box-shadow: var(--shadow); border-color: var(--purple); }
+    /* 拖拽占位线：松手会插在这里 */
+    .tag-drop-indicator { width: 3px; height: 28px; background: var(--purple); border-radius: 2px; display: inline-block; vertical-align: middle; margin: 0 2px; box-shadow: 0 0 0 2px rgba(124,58,237,0.2); }
     #tag-box { transition: box-shadow 0.12s; }
     .sub-panel { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
     .sub-panel.open { max-height: 500px; }
@@ -245,9 +249,9 @@
             <label class="block text-sm font-semibold mb-1.5">Tag 标签</label>
             <div class="relative" id="tag-wrapper">
               <div id="tag-box" class="input-field flex flex-wrap items-center gap-2 px-3 py-2.5 min-h-[44px] cursor-pointer" onclick="toggleTagDropdown()">
-                <span class="tag-pill" draggable="true" style="background:var(--purple-light)">Mafia <iconify-icon icon="lucide:x" class="rm text-xs" onclick="event.stopPropagation();this.parentElement.remove()"></iconify-icon></span>
-                <span class="tag-pill" draggable="true" style="background:var(--coral-light)">Romance <iconify-icon icon="lucide:x" class="rm text-xs" onclick="event.stopPropagation();this.parentElement.remove()"></iconify-icon></span>
-                <span class="tag-pill" draggable="true" style="background:var(--lemon-light)">Suspense <iconify-icon icon="lucide:x" class="rm text-xs" onclick="event.stopPropagation();this.parentElement.remove()"></iconify-icon></span>
+                <span class="tag-pill" draggable="true" style="background:var(--purple-light)"><iconify-icon icon="lucide:grip-vertical" class="handle text-xs"></iconify-icon>Mafia <iconify-icon icon="lucide:x" class="rm text-xs" onclick="event.stopPropagation();this.parentElement.remove();syncTagPlaceholder()"></iconify-icon></span>
+                <span class="tag-pill" draggable="true" style="background:var(--coral-light)"><iconify-icon icon="lucide:grip-vertical" class="handle text-xs"></iconify-icon>Romance <iconify-icon icon="lucide:x" class="rm text-xs" onclick="event.stopPropagation();this.parentElement.remove();syncTagPlaceholder()"></iconify-icon></span>
+                <span class="tag-pill" draggable="true" style="background:var(--lemon-light)"><iconify-icon icon="lucide:grip-vertical" class="handle text-xs"></iconify-icon>Suspense <iconify-icon icon="lucide:x" class="rm text-xs" onclick="event.stopPropagation();this.parentElement.remove();syncTagPlaceholder()"></iconify-icon></span>
                 <span id="tag-placeholder" class="text-xs flex-1 min-w-[80px]" style="color:var(--gray)">点击从标签库选择...</span>
               </div>
               <div id="tag-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:20;background:var(--white);border:2px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:6px;max-height:180px;overflow-y:auto">
@@ -504,7 +508,7 @@ function addTag(v) {
   const s = document.createElement('span');
   s.className = 'tag-pill'; s.style.background = colors[ci++ % colors.length];
   s.setAttribute('draggable', 'true');
-  s.innerHTML = v + ' <iconify-icon icon="lucide:x" class="rm text-xs" onclick="event.stopPropagation();this.parentElement.remove();syncTagPlaceholder()"></iconify-icon>';
+  s.innerHTML = '<iconify-icon icon="lucide:grip-vertical" class="handle text-xs"></iconify-icon>' + v + ' <iconify-icon icon="lucide:x" class="rm text-xs" onclick="event.stopPropagation();this.parentElement.remove();syncTagPlaceholder()"></iconify-icon>';
   attachTagDragHandlers(s);
   document.getElementById('tag-placeholder').before(s);
   syncTagPlaceholder();
@@ -547,6 +551,7 @@ document.addEventListener('click', function(e) {
 });
 
 // === Tag 拖拽排序（v1.0.9：单剧内调整顺序，不影响标签库全局）===
+// 拖动时显示紫色占位线，指明松手会插入的位置
 function attachTagDragHandlers(pill) {
   pill.addEventListener('dragstart', function(e) {
     pill.classList.add('dragging');
@@ -555,28 +560,58 @@ function attachTagDragHandlers(pill) {
   });
   pill.addEventListener('dragend', function() {
     pill.classList.remove('dragging');
-    document.querySelectorAll('#tag-box .tag-pill.drag-over').forEach(p => p.classList.remove('drag-over'));
-  });
-  pill.addEventListener('dragover', function(e) {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    if (!pill.classList.contains('dragging')) pill.classList.add('drag-over');
-  });
-  pill.addEventListener('dragleave', function() {
-    pill.classList.remove('drag-over');
-  });
-  pill.addEventListener('drop', function(e) {
-    e.preventDefault();
-    pill.classList.remove('drag-over');
-    const dragging = document.querySelector('#tag-box .tag-pill.dragging');
-    if (!dragging || dragging === pill) return;
-    // 落点：鼠标在目标 pill 前半则插前面，后半插后面
-    const rect = pill.getBoundingClientRect();
-    const after = (e.clientX - rect.left) > rect.width / 2;
-    pill.parentNode.insertBefore(dragging, after ? pill.nextSibling : pill);
+    removeTagDropIndicator();
   });
 }
+// 计算占位线应插入的参照元素和方向，返回 {ref, after}
+function getTagDropTarget(box, x, y) {
+  const pills = Array.from(box.querySelectorAll('.tag-pill:not(.dragging)'));
+  // 同一行的 pill（y 重叠），按 x 升序
+  const row = pills.filter(p => {
+    const r = p.getBoundingClientRect();
+    return y >= r.top - 5 && y <= r.bottom + 5;
+  });
+  if (!row.length) {
+    // 鼠标不在任何 pill 行：拖到最末
+    return pills.length ? { ref: pills[pills.length - 1], after: true } : { ref: null, after: false };
+  }
+  row.sort((a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left);
+  for (const p of row) {
+    const r = p.getBoundingClientRect();
+    if (x < r.left + r.width / 2) return { ref: p, after: false };
+  }
+  // 落在行内最后一个 pill 的右半
+  return { ref: row[row.length - 1], after: true };
+}
+function removeTagDropIndicator() {
+  document.querySelectorAll('#tag-box .tag-drop-indicator').forEach(el => el.remove());
+}
+function moveTagDropIndicator(box, x, y) {
+  const { ref, after } = getTagDropTarget(box, x, y);
+  removeTagDropIndicator();
+  if (!ref) return;
+  const ind = document.createElement('span');
+  ind.className = 'tag-drop-indicator';
+  ref.parentNode.insertBefore(ind, after ? ref.nextSibling : ref);
+}
+// 在 tag-box 上监听拖动，实时移动占位线
 document.addEventListener('DOMContentLoaded', function() {
+  const box = document.getElementById('tag-box');
+  if (!box) return;
+  box.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    moveTagDropIndicator(box, e.clientX, e.clientY);
+  });
+  box.addEventListener('drop', function(e) {
+    e.preventDefault();
+    const dragging = document.querySelector('#tag-box .tag-pill.dragging');
+    if (!dragging) return;
+    const { ref, after } = getTagDropTarget(box, e.clientX, e.clientY);
+    removeTagDropIndicator();
+    if (!ref) { box.insertBefore(dragging, document.getElementById('tag-placeholder')); return; }
+    ref.parentNode.insertBefore(dragging, after ? ref.nextSibling : ref);
+  });
   document.querySelectorAll('#tag-box .tag-pill').forEach(attachTagDragHandlers);
   syncTagPlaceholder();
 });
