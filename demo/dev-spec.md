@@ -1,6 +1,6 @@
 # 漫剧管理后台 — 研发说明 & 关键约束
 
-> 对应 Demo：`demo-v2/drama-detail.html`、`demo-v2/drama-list.html`、`demo-v2/tag-list.html`、`demo-v2/tag-detail.html`、`demo-v2/author-list.html`、`demo-v2/author-detail.html`
+> 对应 Demo：`demo/drama-detail.html`、`demo/drama-list.html`、`demo/tag-list.html`、`demo/tag-detail.html`、`demo/author-list.html`、`demo/author-detail.html`
 > 版本：**v1.0.9** · 更新日期：2026-08-13
 > 产品负责人：Dean
 

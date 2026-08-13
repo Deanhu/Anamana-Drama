@@ -1,6 +1,6 @@
 # VidStore 漫剧管理验收 Checklist
 
-> 基准：`demo-v2/dev-spec.md` v1.0.6、`docs/研发反馈决策表-v1.0.4.md`、`/Users/Dean/Downloads/操作手册-漫剧管理.md`
+> 基准：`demo/dev-spec.md` v1.0.6、`docs/研发反馈决策表-v1.0.4.md`、`/Users/Dean/Downloads/操作手册-漫剧管理.md`
 > 执行策略：先只读巡检；写入类动作（创建、保存、发布、上传、下线、删除）需单独确认后执行。
 
 ## 分级
